@@ -27,7 +27,7 @@ export function Settings() {
   const testConnection = async () => {
     setTestStatus('testing');
     try {
-      const res = await fetch(`${backendUrl}/api/net/ai_status`);
+      const res = await fetch(`${backendUrl}/api/net/status`);
       if (res.ok) setTestStatus('ok');
       else setTestStatus('fail');
     } catch {

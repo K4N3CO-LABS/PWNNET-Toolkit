@@ -1912,7 +1912,7 @@ export function AiTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
       if (res.ok) {
         setResult(data.result || 'No output generated.');
       } else {
-        setResult(`Vulnerability Analysis Error: ${data.error || 'Check GEMINI_API_KEY environment variable on the server.'}`);
+        setResult(`Vulnerability Analysis Error: ${data.error || 'Check API configurations on the server.'}`);
       }
     } catch(e: any) {
       setResult(`Connection Error: ${e.message}`);
@@ -1925,7 +1925,7 @@ export function AiTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
     <CustomToolLayout tool={tool} onClose={onClose}>
       <div className="flex flex-col h-full space-y-4">
         <label className="text-gray-500 text-[10px] font-bold uppercase tracking-widest block">AI VULNERABILITY ANALYZER</label>
-        
+
         <textarea
             value={code}
             onChange={e => setCode(e.target.value)}
@@ -1934,7 +1934,7 @@ export function AiTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
             className="h-48 bg-[#050505] border border-neon-green/20 focus:border-neon-green rounded-xl p-4 text-neon-green font-mono text-xs outline-none transition-all resize-none"
             placeholder="Paste code snippet, minified JS, or HTTP request to analyze..."
           />
-        
+
         <button
             onClick={analyze}
             disabled={loading || !code}
@@ -1988,7 +1988,7 @@ export function LlmJailbreakerTool({ tool, onClose }: { tool: ToolDef, onClose: 
     <CustomToolLayout tool={tool} onClose={onClose}>
       <div className="flex flex-col h-full space-y-4">
         <label className="text-gray-500 text-[10px] font-bold uppercase tracking-widest block">LLM JAILBREAKER</label>
-        
+
         <div className="flex flex-wrap gap-2">
           {tabs.map(t => (
             <button
@@ -2010,7 +2010,7 @@ export function LlmJailbreakerTool({ tool, onClose }: { tool: ToolDef, onClose: 
             onKeyDown={handleKeyDown}
             className="bg-[#050505] border border-neon-green/20 focus-within:border-neon-green rounded-xl text-xs"
             placeholder="target LLM system or persona (e.g. Finance Bot)"
-            onClear={() => setTarget('')} 
+            onClear={() => setTarget('')}
           />
           <button
             onClick={scan}

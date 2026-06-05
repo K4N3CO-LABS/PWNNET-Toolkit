@@ -14,8 +14,7 @@ export const getBackendUrl = () => {
     // ON PC: If you are running 'npm run dev' on your computer
     // we use localhost.
     // ON PHONE: Capacitor also uses 'localhost', so we need to distinguish.
-    // We check for the bridge or the native platform.
-    const isNative = (window as any).Capacitor?.getPlatform?.() !== undefined || !!(window as any).androidBridge;
+    const isNative = (window as any).Capacitor?.platform !== 'web' && (window as any).Capacitor?.platform !== undefined;
 
     if (!isNative && (hostname === 'localhost' || hostname === '127.0.0.1')) {
       return 'http://localhost:3000';

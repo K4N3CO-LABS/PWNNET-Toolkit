@@ -23,7 +23,6 @@
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
     "@capgo/capacitor-nfc": "^8.0.28",
-    "@google/genai": "^1.29.0",
     "@types/cors": "^2.8.19",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
