@@ -412,27 +412,19 @@ export function DorksPage({ tool, onClose }: DorksPageProps) {
                 COPY DORK
               </button>
 
-              <a
-                href={(!validateTarget() || !compilingString) ? '#' : `https://www.google.com/search?q=${encodeURIComponent((targetDomain.trim() ? `site:${targetDomain.replace(/^https?:\/\//, '')} ` : '') + compilingString)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  if (!validateTarget(true) || !compilingString) {
-                    e.preventDefault();
-                    return;
-                  }
-                  // Let the native anchor tag handle the link opening if possible
-                  // We'll also try our advanced intent fallback just in case the webview traps clicks
-                  const isAndroid = /android/i.test(navigator.userAgent);
-                  if (isAndroid) {
-                    e.preventDefault();
-                    openExternalLink(`https://www.google.com/search?q=${encodeURIComponent((targetDomain.trim() ? `site:${targetDomain.replace(/^https?:\/\//, '')} ` : '') + compilingString)}`);
-                  }
+              <button
+                onClick={async () => {
+                  if (!validateTarget(true) || !compilingString) return;
+                  saveDomainHistory();
+                  const cleanTarget = targetDomain.trim().replace(/https?:\/\//, '');
+                  const query = (cleanTarget ? `site:${cleanTarget} ` : '') + compilingString;
+                  const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                  await openExternalLink(url);
                 }}
-                className={`flex-[2] bg-neon-green/[0.05] hover:bg-neon-green text-neon-green hover:text-black border border-neon-green transition-all font-bold text-xs uppercase tracking-widest rounded-xl p-4 flex items-center justify-center active:scale-[0.98] ${!compilingString ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                className={`flex-[2] bg-neon-green text-black border border-neon-green transition-all font-bold text-xs uppercase tracking-widest rounded-xl p-4 flex items-center justify-center active:scale-[0.98] ${!compilingString ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:shadow-[0_0_15px_rgba(57,255,20,0.4)]'}`}
               >
                 LAUNCH SEARCH
-              </a>
+              </button>
             </div>
 
           </div>

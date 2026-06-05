@@ -1,26 +1,30 @@
+import { Capacitor } from '@capacitor/core';
+
 export const getBackendUrl = () => {
-  // Check if we have a user-defined override in localStorage
   if (typeof window !== 'undefined') {
+    // 1. Check for manual override first
     const override = localStorage.getItem('pwnnet_backend_url');
     if (override) return override;
 
     const hostname = window.location.hostname;
 
-    // Check if we are running inside AI Studio
-    if (hostname.includes('run.app')) {
+    // 2. AI Studio / Preview check
+    if (hostname.includes('run.app') || hostname.includes('web-preview')) {
         return ''; 
     }
 
-    // ON PC: If you are running 'npm run dev' on your computer
-    // we use localhost.
-    // ON PHONE: Capacitor also uses 'localhost', so we need to distinguish.
-    const isNative = (window as any).Capacitor?.platform !== 'web' && (window as any).Capacitor?.platform !== undefined;
+    // 3. Environment Check
+    // If we are on Android or iOS, we MUST use the Render backend.
+    if (Capacitor.isNativePlatform()) {
+      return 'https://pwnnet-toolkit.onrender.com';
+    }
 
-    if (!isNative && (hostname === 'localhost' || hostname === '127.0.0.1')) {
+    // ON PC BROWSER: Use local node if on localhost
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
       return 'http://localhost:3000';
     }
   }
 
-  // Default production backend for the APK
+  // Fallback default
   return 'https://pwnnet-toolkit.onrender.com';
 };
