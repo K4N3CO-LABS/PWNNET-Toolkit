@@ -55,10 +55,12 @@ export function DirScannerTool({ tool, onClose }: { tool: ToolDef; onClose: () =
       const backendUrl = getBackendUrl();
       const qs = new URLSearchParams({ target: url }).toString();
       const res = await fetch(`${backendUrl}/api/net/dirscan?${qs}`);
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
       const data = await res.json();
       setResults(data.results || []);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      alert(`Connection Error: ${e.message}. Ensure your backend is running at ${getBackendUrl()}`);
     } finally {
       setStatus('finished');
     }

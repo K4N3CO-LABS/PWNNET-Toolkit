@@ -1174,67 +1174,10 @@ function NfcTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<'reader' | 'library'>('reader');
 
   useEffect(() => {
-    let listener: any = null;
-
-    const setupListener = async () => {
-      if (Capacitor.isNativePlatform()) {
-        listener = await CapacitorNfc.addListener('nfcEvent', (event: any) => {
-          if (!event || !event.tag) {
-            setMessage('Scan Error: Invalid tag data received.');
-            setScanning(false);
-            return;
-          }
-
-          const tag = event.tag;
-          setMessage(`Interrogation Successful: [${tag.type || 'TAG'}]`);
-
-          const decoded: any[] = [];
-          decoded.push({
-            type: 'Hardware ID',
-            data: tag.id || 'Unknown UID'
-          });
-
-          decoded.push({
-            type: 'Protocols',
-            data: Array.isArray(tag.techList) ? tag.techList.join(', ') : 'N/A'
-          });
-
-          if (tag.ndefMessage && Array.isArray(tag.ndefMessage)) {
-            tag.ndefMessage.forEach((record: any, idx: number) => {
-              let payload = 'Empty';
-              try {
-                if (record.payload) {
-                  // Basic conversion for common records
-                  payload = String.fromCharCode(...record.payload);
-                  // Heuristic to strip language headers from text records
-                  if (payload.length > 3 && payload.slice(1,3) === 'en') {
-                    payload = payload.slice(3);
-                  }
-                }
-              } catch(e) { payload = '<Encrypted/Binary Data>'; }
-
-              decoded.push({
-                type: `NDEF Record #${idx + 1}`,
-                data: payload
-              });
-            });
-          } else {
-            decoded.push({ type: 'Memory Map', data: 'Raw sectors detected. No NDEF records found.' });
-          }
-
-          setRecords(decoded);
-          setScanning(false);
-          CapacitorNfc.stopScanning().catch(() => {});
-        });
-      }
-    };
-
-    setupListener();
-
     return () => {
-      if (listener) listener.remove();
       if (Capacitor.isNativePlatform()) {
         CapacitorNfc.stopScanning().catch(() => {});
+        CapacitorNfc.removeAllListeners().catch(() => {});
       }
     };
   }, []);
@@ -1246,27 +1189,54 @@ function NfcTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
       if (Capacitor.isNativePlatform()) {
         setScanning(true);
         setMessage('Ready. Place device against NFC target...');
+
+        // Remove any old listeners to prevent stacking/crashing
+        await CapacitorNfc.removeAllListeners();
+
+        await CapacitorNfc.addListener('nfcEvent', (event: any) => {
+          if (event && event.tag) {
+             const tag = event.tag;
+             setMessage(`Read success! [${tag.type || 'NFC'}]`);
+             const decoded = [];
+             decoded.push({ type: 'Hardware ID', data: tag.id || 'N/A' });
+             decoded.push({ type: 'Technology', data: tag.techList?.join(', ') || 'N/A' });
+
+             if (tag.ndefMessage) {
+               tag.ndefMessage.forEach((rec: any, i: number) => {
+                 try {
+                   let payload = String.fromCharCode(...rec.payload);
+                   // Clean text records
+                   if (payload.length > 3 && (payload.includes('en') || payload.includes('fr'))) {
+                      payload = payload.substring(3);
+                   }
+                   decoded.push({ type: `Record ${i+1}`, data: payload });
+                 } catch(e) {
+                   decoded.push({ type: `Record ${i+1}`, data: '<Binary Data>' });
+                 }
+               });
+             }
+             setRecords(decoded);
+          }
+          setScanning(false);
+          CapacitorNfc.stopScanning().catch(() => {});
+        });
+
         await CapacitorNfc.startScanning();
       } else {
         if (!('NDEFReader' in window)) {
-          setMessage('Web NFC is not supported in this environment.');
+          setMessage('Web NFC not supported.');
           return;
         }
         setScanning(true);
         const ndef = new (window as any).NDEFReader();
         await ndef.scan();
-        ndef.onreading = (event: any) => {
-          const decoded = [{ type: 'Serial', data: event.serialNumber }];
-          for (const record of event.message.records) {
-            const decoder = new TextDecoder();
-            decoded.push({ type: record.recordType.toUpperCase(), data: decoder.decode(record.data) });
-          }
-          setRecords(decoded);
-          setScanning(false);
+        ndef.onreading = (e: any) => {
+           setRecords([{ type: 'Serial', data: e.serialNumber }]);
+           setScanning(false);
         };
       }
     } catch (error: any) {
-      setMessage(`Driver Error: ${error.message}`);
+      setMessage(`Error: ${error.message}`);
       setScanning(false);
     }
   };

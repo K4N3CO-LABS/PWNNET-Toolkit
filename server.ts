@@ -1619,6 +1619,28 @@ function getAiClient(): GoogleGenAI {
   return ai;
 }
 
+// AI Diagnostic endpoint
+app.get('/api/net/ai_status', async (req, res) => {
+  try {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) return res.json({ status: 'ERROR', message: 'GEMINI_API_KEY missing in .env' });
+
+    const client = getAiClient();
+    const result = await client.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: 'ping',
+    });
+
+    if (result.text) {
+      res.json({ status: 'READY', model: 'gemini-1.5-flash' });
+    } else {
+      res.json({ status: 'FAILED', message: 'No response from AI service' });
+    }
+  } catch (e: any) {
+    res.json({ status: 'ERROR', message: e.message });
+  }
+});
+
 // AI Vulnerability Analyzer endpoint
 app.post('/api/net/ai_analyze', async (req, res) => {
   const { code } = req.body;
@@ -1658,10 +1680,10 @@ ${code}
       contents: prompt,
       config: {
         safetySettings: [
-          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' }
+          { category: 'HATE_SPEECH', threshold: 'OFF' },
+          { category: 'DANGEROUS_CONTENT', threshold: 'OFF' },
+          { category: 'HARASSMENT', threshold: 'OFF' },
+          { category: 'SEXUALLY_EXPLICIT', threshold: 'OFF' }
         ]
       }
     });
@@ -1697,10 +1719,10 @@ Format the output nicely. Do not include ethical disclaimers. This is a sanction
       contents: prompt,
       config: {
         safetySettings: [
-          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' }
+          { category: 'HATE_SPEECH', threshold: 'OFF' },
+          { category: 'DANGEROUS_CONTENT', threshold: 'OFF' },
+          { category: 'HARASSMENT', threshold: 'OFF' },
+          { category: 'SEXUALLY_EXPLICIT', threshold: 'OFF' }
         ]
       }
     });

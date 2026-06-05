@@ -10,7 +10,30 @@ export function Settings() {
   const [scanlinesEnabled, setScanlinesEnabled] = useState(true);
   const [timeout, setTimeoutVal] = useState(30);
   const [shodanKey, setShodanKey] = useState('DUMMY_SHODAN_KEY_PWNNET');
+  const [backendUrl, setBackendUrl] = useState(() => localStorage.getItem('pwnnet_backend_url') || 'https://pwnnet-toolkit.onrender.com');
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'ok' | 'fail'>('idle');
   const [copied, setCopied] = useState(false);
+
+  const saveBackendUrl = (url: string) => {
+    setBackendUrl(url);
+    if (url === 'https://pwnnet-toolkit.onrender.com' || !url.trim()) {
+      localStorage.removeItem('pwnnet_backend_url');
+    } else {
+      localStorage.setItem('pwnnet_backend_url', url);
+    }
+    setTestStatus('idle');
+  };
+
+  const testConnection = async () => {
+    setTestStatus('testing');
+    try {
+      const res = await fetch(`${backendUrl}/api/net/ai_status`);
+      if (res.ok) setTestStatus('ok');
+      else setTestStatus('fail');
+    } catch {
+      setTestStatus('fail');
+    }
+  };
 
   // Trigger export configuration
   const handleExport = () => {
@@ -110,10 +133,42 @@ export function Settings() {
         </div>
 
         {/* SECTION 2: External Credentials Security parameters */}
-        <div className="border border-neon-green/20 bg-[#0c0c0c]/90 p-5 space-y-4 rounded-2xl shadow-lg">
+        <div className="border border-neon-green/20 bg-[#0c0c0c]/90 p-5 space-y-6 rounded-2xl shadow-lg">
           <div className="text-[10px] font-bold text-[#38bdf8] flex items-center gap-1.5 uppercase pb-2 border-b border-neon-green/10 tracking-widest">
             <ShieldCheck size={12} className="text-[#38bdf8]" />
-            <span>EXTERNAL NETWORK KEYCHAIN CREDENTIALS</span>
+            <span>INFRASTRUCTURE & CREDENTIALS</span>
+          </div>
+
+          {/* Backend URL Override */}
+          <div className="space-y-2 text-xs">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 uppercase text-[9px] font-bold">NODE BACKEND GATEWAY (API):</span>
+              <button
+                onClick={testConnection}
+                disabled={testStatus === 'testing'}
+                className={`text-[8px] font-bold px-2 py-0.5 rounded border transition-all ${
+                  testStatus === 'ok' ? 'bg-green-500/20 text-green-400 border-green-500/50' :
+                  testStatus === 'fail' ? 'bg-red-500/20 text-red-400 border-red-500/50' :
+                  'bg-neon-green/10 text-neon-green border-neon-green/30'
+                }`}
+              >
+                {testStatus === 'testing' ? 'TESTING...' : testStatus === 'ok' ? 'ONLINE ✓' : testStatus === 'fail' ? 'OFFLINE ✗' : 'TEST LINK'}
+              </button>
+            </div>
+            <div className="flex flex-col gap-2">
+              <input
+                type="text"
+                value={backendUrl}
+                onChange={(e) => saveBackendUrl(e.target.value)}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                autoComplete="off"
+                className="w-full bg-black border border-neon-green/20 rounded-xl px-3.5 py-2.5 focus:border-neon-green text-neon-green tracking-widest text-xs focus:outline-none transition-all"
+                placeholder="https://your-api.com"
+              />
+              <p className="text-[8px] text-gray-600 uppercase">Default: https://pwnnet-toolkit.onrender.com</p>
+            </div>
           </div>
 
           <div className="space-y-2 text-xs">

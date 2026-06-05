@@ -5,17 +5,22 @@ export const getBackendUrl = () => {
     if (override) return override;
 
     const hostname = window.location.hostname;
-    // Check if we are running the app inside AI Studio (dev or preview share links)
+
+    // Check if we are running inside AI Studio
     if (hostname.includes('run.app')) {
         return ''; 
     }
-    // Handle local development on PC
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+
+    // ON PC: If you are running 'npm run dev' on your computer
+    // we use localhost.
+    // ON PHONE: Capacitor also uses 'localhost', so we need to distinguish.
+    const isCapacitor = !!(window as any).Capacitor;
+
+    if (!isCapacitor && (hostname === 'localhost' || hostname === '127.0.0.1')) {
       return 'http://localhost:3000';
     }
   }
 
-  // For the Android APK/Phone, we default to the Render backend
-  // But allow users to change it in Settings if they are running a local node
+  // Default production backend for the APK
   return 'https://pwnnet-toolkit.onrender.com';
 };

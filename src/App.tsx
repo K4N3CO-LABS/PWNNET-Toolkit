@@ -15,6 +15,7 @@ import { FavoritesModal } from './components/FavoritesModal';
 import { AnimatePresence } from 'motion/react';
 import { initKotlinLogger } from './utils/kotlinLogger';
 import { App as CapApp } from '@capacitor/app';
+import { useVisualViewport } from './hooks/useVisualViewport';
 
 class ErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean, error: Error | null}> {
   state = { hasError: false, error: null };
@@ -36,7 +37,9 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('tools');
   const [activeTool, setActiveTool] = useState<ToolDef | null>(null);
   const [showExitToast, setShowExitToast] = useState(false);
+  const keyboardOffset = useVisualViewport();
   const backPressCount = useRef(0);
+  const isKeyboardOpen = keyboardOffset > 0;
 
   useEffect(() => {
     initKotlinLogger();
@@ -144,9 +147,11 @@ export default function App() {
       )}
       {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
 
-      <div className="shrink-0 z-50 relative bg-obsidian">
-        <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} disabled={!!activeTool} />
-      </div>
+      {!isKeyboardOpen && (
+        <div className="shrink-0 z-50 relative bg-obsidian">
+          <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} disabled={!!activeTool} />
+        </div>
+      )}
 
       <AnimatePresence>
         {showExitToast && (
