@@ -1171,69 +1171,79 @@ function NfcTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
   const [scanning, setScanning] = useState(false);
   const [message, setMessage] = useState<string>('');
   const [records, setRecords] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'reader' | 'library'>('reader');
 
   useEffect(() => {
     return () => {
+      // cleanup on unmount
       if (Capacitor.isNativePlatform()) {
         CapacitorNfc.stopScanning().catch(() => {});
-        CapacitorNfc.removeAllListeners().catch(() => {});
       }
     };
   }, []);
 
   const startScan = async () => {
     (document.activeElement as HTMLElement)?.blur();
-    setRecords([]);
     try {
       if (Capacitor.isNativePlatform()) {
         setScanning(true);
-        setMessage('Ready. Place device against NFC target...');
+        setMessage('Ready. Bring NFC tag near the device antenna...');
 
-        // Remove any old listeners to prevent stacking/crashing
-        await CapacitorNfc.removeAllListeners();
-
-        await CapacitorNfc.addListener('nfcEvent', (event: any) => {
-          if (event && event.tag) {
-             const tag = event.tag;
-             setMessage(`Read success! [${tag.type || 'NFC'}]`);
-             const decoded = [];
-             decoded.push({ type: 'Hardware ID', data: tag.id || 'N/A' });
-             decoded.push({ type: 'Technology', data: tag.techList?.join(', ') || 'N/A' });
-
-             if (tag.ndefMessage) {
-               tag.ndefMessage.forEach((rec: any, i: number) => {
-                 try {
-                   let payload = String.fromCharCode(...rec.payload);
-                   // Clean text records
-                   if (payload.length > 3 && (payload.includes('en') || payload.includes('fr'))) {
-                      payload = payload.substring(3);
-                   }
-                   decoded.push({ type: `Record ${i+1}`, data: payload });
-                 } catch(e) {
-                   decoded.push({ type: `Record ${i+1}`, data: '<Binary Data>' });
-                 }
+        // Listen once for the scanned event
+        await CapacitorNfc.addListener('nfcEvent', async (event) => {
+          setMessage(`Scanned Tag! Serial: ${event.tag.id || 'Unknown'} - Type: ${event.tag.type || 'Unknown'}`);
+          const decoded = [];
+          if (event.tag.ndefMessage) {
+            for (const record of event.tag.ndefMessage) {
+               // The plugin usually parses text payloads into record.payload
+               decoded.push({
+                 type: record.type ? String.fromCharCode(...record.type) : 'Unknown',
+                 data: record.payload ? String.fromCharCode(...record.payload) : '<binary>'
                });
-             }
-             setRecords(decoded);
+            }
+          } else {
+             decoded.push({ type: 'Info', data: 'Tag has no NDEF records or is empty.' });
           }
+          setRecords(decoded);
           setScanning(false);
-          CapacitorNfc.stopScanning().catch(() => {});
+          await CapacitorNfc.stopScanning();
         });
 
         await CapacitorNfc.startScanning();
       } else {
+        // web fallback
         if (!('NDEFReader' in window)) {
-          setMessage('Web NFC not supported.');
+          setMessage('Cannot connect. Make sure NFC is turned on and supported by this device browser.');
+          setScanning(false);
           return;
         }
         setScanning(true);
+        setMessage('Please bring an NFC tag near the device...');
         const ndef = new (window as any).NDEFReader();
         await ndef.scan();
-        ndef.onreading = (e: any) => {
-           setRecords([{ type: 'Serial', data: e.serialNumber }]);
-           setScanning(false);
-        };
+
+        ndef.addEventListener("readingerror", () => {
+          setMessage('Error reading NFC tag. Try again.');
+          setScanning(false);
+        });
+
+        ndef.addEventListener("reading", ({ message, serialNumber }: any) => {
+          setMessage(`Read tag with Serial Number: ${serialNumber}`);
+          const decodedRecords = [];
+          for (const record of message.records) {
+            const textDecoder = new TextDecoder(record.encoding || 'utf-8');
+            try {
+              decodedRecords.push({
+                type: record.recordType,
+                mediaType: record.mediaType,
+                data: textDecoder.decode(record.data)
+              });
+            } catch(e) {
+              decodedRecords.push({ type: record.recordType, data: '<binary data>' });
+            }
+          }
+          setRecords(decodedRecords);
+          setScanning(false);
+        });
       }
     } catch (error: any) {
       setMessage(`Error: ${error.message}`);
@@ -1241,71 +1251,36 @@ function NfcTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
     }
   };
 
-  const tagLibrary = [
-    { name: 'MIFARE Classic (1K/4K)', info: 'High frequency (13.56 MHz). Uses CRYPTO1 stream cipher. Vulnerable to nested/darkside attacks. Common in legacy access control.' },
-    { name: 'NTAG 213/215/216', info: 'NFC Forum Type 2 tags. Fully NDEF compatible. Common for business cards, automation, and Amiibo (NTAG215).' },
-    { name: 'MIFARE DESFire EV1/2/3', info: 'Advanced security with hardware-accelerated AES/3DES. Used in high-security government and corporate IDs.' },
-    { name: 'MIFARE Ultralight', info: 'Low-cost, single-use tickets. No encryption, but supports one-time programmable (OTP) memory bits.' },
-    { name: 'FeliCa (Sony)', info: 'ISO/IEC 18092. Extremely high speed. Standard for transit and payment in Japan (Suica) and Hong Kong (Octopus).' },
-    { name: 'HID iClass / Prox', info: 'Physical access standard. iClass uses 13.56MHz with DES encryption. Prox (Legacy) uses 125kHz (Not supported by NFC hardware).' },
-    { name: 'ISO 15693 (Vicinity)', info: 'Longer read range (up to 1 meter with large antennas). Common in library books, pharmacy items, and asset tracking.' }
-  ];
-
   return (
     <CustomToolLayout tool={tool} onClose={onClose}>
-      <div className="flex flex-col h-full space-y-4">
-        <div className="flex gap-2 border-b border-neon-green/20 pb-2">
-           <button onClick={() => setActiveTab('reader')} className={`flex-1 py-2 text-[10px] font-bold tracking-widest uppercase transition-all ${activeTab === 'reader' ? 'text-neon-green bg-neon-green/10 rounded' : 'text-gray-500'}`}>INTERROGATOR</button>
-           <button onClick={() => setActiveTab('library')} className={`flex-1 py-2 text-[10px] font-bold tracking-widest uppercase transition-all ${activeTab === 'library' ? 'text-neon-green bg-neon-green/10 rounded' : 'text-gray-500'}`}>PROTOCOL DB</button>
-        </div>
+      <div className="space-y-6 block">
+        <label className="text-gray-500 text-[10px] font-bold uppercase tracking-widest flex items-center justify-between mb-4">
+          <span>NFC READER</span>
+          <button
+            onClick={startScan}
+            disabled={scanning}
+            className="bg-neon-green/10 text-neon-green border border-neon-green/30 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider disabled:opacity-50 hover:bg-neon-green hover:text-black transition-all"
+          >
+            {scanning ? 'WAITING...' : 'START SCAN'}
+          </button>
+        </label>
         
-        {activeTab === 'reader' ? (
-          <>
-            <div className="flex flex-col items-center justify-center p-10 border border-neon-green/20 rounded-2xl bg-neon-green/5 shadow-[0_0_20px_rgba(57,255,20,0.05)]">
-              <div className={`w-20 h-20 rounded-full border-2 ${scanning ? 'border-neon-green animate-pulse shadow-[0_0_15px_rgba(57,255,20,0.4)]' : 'border-neon-green/30'} flex items-center justify-center mb-6`}>
-                 <Wifi size={32} className="text-neon-green" />
-              </div>
-              <p className="text-neon-green text-[10px] font-mono tracking-widest uppercase text-center mb-8 h-8">
-                {message || 'AWAITING SEQUENCE INITIALIZATION'}
-              </p>
-              <button
-                onClick={startScan}
-                disabled={scanning}
-                className="w-full bg-neon-green text-black hover:bg-white transition-all py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] disabled:opacity-50"
-              >
-                {scanning ? 'SCANNING AIRWAVES...' : 'ACTIVATE ANTENNA'}
-              </button>
-            </div>
-
-            {records.length > 0 && (
-               <div className="bg-[#050505] rounded-xl border border-neon-green/20 p-4 space-y-3 overflow-auto max-h-[300px] font-mono">
-                   <h3 className="text-[10px] font-bold text-gray-500 tracking-widest uppercase mb-2 border-b border-white/10 pb-1">DECODED DATASET</h3>
-                   {records.map((r, i) => (
-                     <div key={i} className="border-b border-white/5 pb-2 last:border-0 p-1">
-                       <div className="text-neon-green/60 text-[8px] uppercase font-bold tracking-tighter mb-1">{r.type}</div>
-                       <div className="text-white text-[11px] break-all leading-tight">{r.data}</div>
-                     </div>
-                   ))}
-               </div>
-            )}
-          </>
+        {scanning ? (
+           <div className="flex flex-col items-center justify-center p-12 border border-neon-green/20 rounded-xl bg-[#050505] shadow-[0_0_20px_rgba(57,255,20,0.1)]">
+             <div className="w-8 h-8 rounded-full border-2 border-neon-green/20 border-t-neon-green animate-spin mb-4" />
+             <p className="text-neon-green text-xs font-mono tracking-widest uppercase text-center">{message || 'WAITING FOR NFC TAG...'}</p>
+           </div>
         ) : (
-          <div className="space-y-4">
-             {tagLibrary.map((tag, i) => (
-               <div key={i} className="p-4 border border-white/5 bg-[#050505] rounded-xl group hover:border-neon-green/30 transition-all">
-                  <h3 className="text-neon-green font-bold text-xs uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-neon-green animate-pulse" />
-                    {tag.name}
-                  </h3>
-                  <p className="text-gray-400 text-[10px] font-mono leading-relaxed">{tag.info}</p>
-               </div>
-             ))}
-             <div className="p-4 bg-neon-green/5 border border-dashed border-neon-green/30 rounded-xl">
-                <p className="text-[9px] text-gray-500 uppercase font-mono text-center">
-                  PWN//NET NFC CORE: COMPATIBLE WITH ISO 14443-A/B, ISO 15693, FeliCa, AND NDEF DATA STANDARDS.
-                </p>
-             </div>
-          </div>
+           <div className="h-full border border-white/5 bg-[#050505] rounded-xl p-4 overflow-y-auto font-mono text-xs text-neon-green/80 flex flex-col gap-4">
+               {message && <div className="text-white mb-2">{message}</div>}
+               {records.map((r, i) => (
+                 <div key={i} className="border border-neon-green/10 p-2 rounded">
+                   <div className="text-gray-500 mb-1">Type: {r.type}</div>
+                   {r.mediaType && <div className="text-gray-500 mb-1">Media: {r.mediaType}</div>}
+                   <div className="break-words">{r.data}</div>
+                 </div>
+               ))}
+           </div>
         )}
       </div>
     </CustomToolLayout>

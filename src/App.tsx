@@ -15,7 +15,7 @@ import { FavoritesModal } from './components/FavoritesModal';
 import { AnimatePresence } from 'motion/react';
 import { initKotlinLogger } from './utils/kotlinLogger';
 import { App as CapApp } from '@capacitor/app';
-import { useVisualViewport } from './hooks/useVisualViewport';
+import { Keyboard } from '@capacitor/keyboard';
 
 class ErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean, error: Error | null}> {
   state = { hasError: false, error: null };
@@ -37,9 +37,17 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('tools');
   const [activeTool, setActiveTool] = useState<ToolDef | null>(null);
   const [showExitToast, setShowExitToast] = useState(false);
-  const keyboardOffset = useVisualViewport();
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const backPressCount = useRef(0);
-  const isKeyboardOpen = keyboardOffset > 0;
+
+  useEffect(() => {
+    const showListener = Keyboard.addListener('keyboardWillShow', () => setIsKeyboardOpen(true));
+    const hideListener = Keyboard.addListener('keyboardWillHide', () => setIsKeyboardOpen(false));
+    return () => {
+      showListener.then(l => l.remove());
+      hideListener.then(l => l.remove());
+    };
+  }, []);
 
   useEffect(() => {
     initKotlinLogger();
