@@ -1,0 +1,129 @@
+[![Screenshot-20260528-172644-Bazaart.jpg](https://i.postimg.cc/FsFhjMXz/Screenshot-20260528-172644-Bazaart.jpg)](https://postimg.cc/s18Fz0XC)
+
+[![homescreen.png](https://i.postimg.cc/BZgFgfkK/homescreen.png)](https://postimg.cc/Jtstrv1r)
+
+**PWN//NET** is the ultimate ethical bug-hunting and networking toolkit designed for security researchers, penetration testers, and enthusiasts. From identifying critical vulnerabilities to uncovering hidden attack surfaces, PWN//NET equips you with **40+ real-world scanners and diagnostic tools** to find exploitable bugs, exposed secrets, and misconfigurations — all in a clean, responsive interface.
+
+Whether you're a beginner learning the ropes of ethical hacking or a seasoned professional hunting for bounties on production targets, PWN//NET provides the advanced reconnaissance capabilities you need to succeed.
+
+**Available on Web + Android APK**
+
+---
+
+## ✨ Core Features
+
+- **⚡ Tools Grid** — 43 ready-to-use tools including:
+  - Subdomain Enumeration
+  - JS Secrets & Endpoint Scanner
+  - CORS Misconfiguration Audit
+  - Web Crawler
+  - WordPress Scanner
+  - Admin Finder
+  - Have I Been Pwned
+  - Phone Crawler
+  - Ping & Ping Sweep
+  - Port Scanning
+  - SSH Connection Tester
+  - DNS Lookup
+  - WHOIS
+  - SSL Certificate Info
+  - And many more...
+
+- **🐞 Ethical Bug Hunting** — Purpose-built for security researchers, beginners, and seasoned professionals to identify real attack vectors like exposed API keys, subdomains, and loose CORS policies.
+
+- **🖥️ Live Terminal** — Real-time command output so you can see exactly what’s happening under the hood.
+
+- **📜 Logs System** — Automatically saves your activity and results for later review.
+
+- **📚 Learning Resources** — Built-in references:
+  - Common Ports
+  - OSI Model
+  - Nmap Cheat Sheet
+  - OWASP Top 10
+  - And more
+
+---
+
+### 📱 Mobile App (Android)
+>***Work in progress. Re-writing in Kotlin (Androids native language) for better reliability, speed and feature access*
+
+1. Download the latest **`.apk`** from the [Releases](https://github.com/K4Links/PWNNET-Toolkit/releases) page.
+2. Enable **"Install from Unknown Sources"** in your Android security settings.
+3. Install and open the app.
+
+> **Note**: The mobile version is perfect for on-the-go network reconnaissance.
+
+---
+
+## 🚀 Running Locally (On PC)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/K4Links/PWNNET-Toolkit.git
+
+# 2. Navigate into the project
+cd PWNNET-Toolkit-main
+
+# 3. Install dependencies
+npm install
+
+# 4. Start the development server
+npm run dev
+```
+To open app:
+
+Click the URL shown in the terminal (usually http://localhost:3000 or http://0.0.0.0:3000).
+
+---
+
+ ### 🛠️ Tech Stack
+
+| Layer          | Technology                          |
+|----------------|-------------------------------------|
+| **Frontend**   | React + TypeScript + Vite           |
+| **Backend**    | Express + Node.js (Proxy & APIs)    |
+| **Styling**    | Tailwind CSS                        |
+| **Mobile**     | Android APK (Web-to-Native)         |
+| **Utilities**  | Node.js                             |
+
+---
+
+### 📌 Roadmap / Future Plans
+
+- Add more advanced tools (vulnerability scanning, packet crafting, etc.)
+- Export results as PDF, JSON, or CSV
+- Desktop application using Electron
+---
+
+### ⭐ Support the Project
+
+If you find **PWN//NET** useful, please consider giving the project a **star** ⭐ — it helps a lot!
+
+**Donations (optional but greatly appreciated):**
+
+**Bitcoin: (BTC)**
+```
+bc1qqh84tnwrkm2sn2wg8r8tzt7sljee6q0km8a5wt
+```
+**Etherium: (ETH)**
+```
+0x6afB80004a277EF9A8De9Bf4b597681cF3A638e9
+```
+**Solana: (SOL)**
+```
+DGheMtGdnVCLDXRb7yQijAWUT1eU1Xt1tP4eY2rkRdCD
+```
+
+---
+
+### Important
+
+PWN//NET-Toolkit is for educational and authorized use. Only use on networks and systems you have  permission to test on. 
+
+— Enjoy responsibly! Feel free to open issues or submit pull requests. Contributions are welcome!
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).

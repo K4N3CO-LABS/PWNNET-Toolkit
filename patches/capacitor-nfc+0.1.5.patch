@@ -1,0 +1,1346 @@
+diff --git a/node_modules/capacitor-nfc/android/build.gradle b/node_modules/capacitor-nfc/android/build.gradle
+index e588f55..14f41e9 100644
+--- a/node_modules/capacitor-nfc/android/build.gradle
++++ b/node_modules/capacitor-nfc/android/build.gradle
+@@ -1,63 +1,60 @@
+ buildscript {
+-    ext.kotlin_version = '1.3.50'
+-
+     repositories {
+-        jcenter()
++        mavenCentral()
+         google()
+     }
+ 
+     dependencies {
+-        classpath 'com.android.tools.build:gradle:3.3.2'
+-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
++        classpath "com.android.tools.build:gradle:${project.findProperty('agpVersion') ?: '8.13.0'}"
++        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${project.findProperty('kotlin_version') ?: '2.2.20'}"
+     }
+ }
+ 
+ apply plugin: 'com.android.library'
+-
+ apply plugin: 'kotlin-android'
+-apply plugin: 'kotlin-android-extensions'
+ 
+ android {
+-    compileSdkVersion 28
++    namespace "com.adrynov.capacitor.nfc"
++    compileSdkVersion project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 36
+     defaultConfig {
+-        minSdkVersion 21
+-        targetSdkVersion 28
++        minSdkVersion project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 24
++        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 36
+         versionCode 1
+         versionName "1.0"
+-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
++        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+     }
+     buildTypes {
+         release {
+             minifyEnabled false
+-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
++            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+         }
+     }
+     lintOptions {
+         abortOnError false
+     }
++    compileOptions {
++        sourceCompatibility JavaVersion.VERSION_21
++        targetCompatibility JavaVersion.VERSION_21
++    }
+ }
+ 
+ repositories {
+     google()
+-    jcenter()
+     mavenCentral()
+ }
+ 
+-
+ dependencies {
+     implementation fileTree(dir: 'libs', include: ['*.jar'])
+-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+-
+     implementation project(':capacitor-android')
++    implementation "androidx.appcompat:appcompat:${project.hasProperty('androidxAppCompatVersion') ? rootProject.ext.androidxAppCompatVersion : '1.7.1'}"
++    implementation "org.jetbrains.kotlin:kotlin-stdlib:${project.findProperty('kotlin_version') ?: '2.2.20'}"
+ 
+     // Kotlin coroutines
+-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2'
+-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.2'
++    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2'
++    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2'
+ 
+     // Testing
+-    testImplementation 'junit:junit:4.12'
+-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+-
++    testImplementation "junit:junit:${project.hasProperty('junitVersion') ? rootProject.ext.junitVersion : '4.13.2'}"
++    androidTestImplementation "androidx.test.ext:junit:${project.hasProperty('androidxJunitVersion') ? rootProject.ext.androidxJunitVersion : '1.3.0'}"
++    androidTestImplementation "androidx.test.espresso:espresso-core:${project.hasProperty('androidxEspressoCoreVersion') ? rootProject.ext.androidxEspressoCoreVersion : '3.7.0'}"
+ }
+-
+diff --git a/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/results.bin b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/results.bin
+new file mode 100644
+index 0000000..7ed749e
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/results.bin
+@@ -0,0 +1 @@
++o/bundleLibRuntimeToDirDebug
+diff --git a/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NFC$handleOnPause$1.dex b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NFC$handleOnPause$1.dex
+new file mode 100644
+index 0000000..c16cf9a
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NFC$handleOnPause$1.dex differ
+diff --git a/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NFC.dex b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NFC.dex
+new file mode 100644
+index 0000000..0521973
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NFC.dex differ
+diff --git a/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NFCKt.dex b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NFCKt.dex
+new file mode 100644
+index 0000000..1457478
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NFCKt.dex differ
+diff --git a/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcSettings.dex b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcSettings.dex
+new file mode 100644
+index 0000000..1cf87aa
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcSettings.dex differ
+diff --git a/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcTag$TagType.dex b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcTag$TagType.dex
+new file mode 100644
+index 0000000..0eef8fe
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcTag$TagType.dex differ
+diff --git a/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcTag.dex b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcTag.dex
+new file mode 100644
+index 0000000..dddb5a5
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcTag.dex differ
+diff --git a/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcUtils.dex b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcUtils.dex
+new file mode 100644
+index 0000000..7338d61
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/adrynov/capacitor/nfc/NfcUtils.dex differ
+diff --git a/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_global-synthetics/com/adrynov/capacitor/nfc/NFC$$InternalSyntheticLambda$2$1ef95107f6619c8e57a469a1a789151e11576ea7cddcde53926a9b7ab9475b77$0.globals b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_global-synthetics/com/adrynov/capacitor/nfc/NFC$$InternalSyntheticLambda$2$1ef95107f6619c8e57a469a1a789151e11576ea7cddcde53926a9b7ab9475b77$0.globals
+new file mode 100644
+index 0000000..cf6ce7d
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_global-synthetics/com/adrynov/capacitor/nfc/NFC$$InternalSyntheticLambda$2$1ef95107f6619c8e57a469a1a789151e11576ea7cddcde53926a9b7ab9475b77$0.globals differ
+diff --git a/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_global-synthetics/com/adrynov/capacitor/nfc/NFC$$InternalSyntheticLambda$2$73a55b3921af3908633b923ea59fe10ca60f0d03b02503f87ba3580661e90943$0.globals b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_global-synthetics/com/adrynov/capacitor/nfc/NFC$$InternalSyntheticLambda$2$73a55b3921af3908633b923ea59fe10ca60f0d03b02503f87ba3580661e90943$0.globals
+new file mode 100644
+index 0000000..cf6ce7d
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_global-synthetics/com/adrynov/capacitor/nfc/NFC$$InternalSyntheticLambda$2$73a55b3921af3908633b923ea59fe10ca60f0d03b02503f87ba3580661e90943$0.globals differ
+diff --git a/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin
+new file mode 100644
+index 0000000..9743911
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/.transforms/27e82260e807190e4092da4682f41e82/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml b/node_modules/capacitor-nfc/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+new file mode 100644
+index 0000000..d68ecdb
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.adrynov.capacitor.nfc" >
++
++    <uses-sdk android:minSdkVersion="24" />
++
++    <uses-permission android:name="android.permission.NFC" />
++
++    <uses-feature
++        android:name="android.hardware.nfc"
++        android:required="true" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json b/node_modules/capacitor-nfc/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+new file mode 100644
+index 0000000..869c67c
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+@@ -0,0 +1,18 @@
++{
++  "version": 3,
++  "artifactType": {
++    "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
++    "kind": "Directory"
++  },
++  "applicationId": "com.adrynov.capacitor.nfc",
++  "variantName": "debug",
++  "elements": [
++    {
++      "type": "SINGLE",
++      "filters": [],
++      "attributes": [],
++      "outputFile": "AndroidManifest.xml"
++    }
++  ],
++  "elementType": "File"
++}
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties b/node_modules/capacitor-nfc/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+new file mode 100644
+index 0000000..ba000c0
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+@@ -0,0 +1,6 @@
++aarFormatVersion=1.0
++aarMetadataVersion=1.0
++minCompileSdk=36
++minCompileSdkExtension=0
++minAndroidGradlePluginVersion=1.0.0
++coreLibraryDesugaringEnabled=false
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/android_res_source_set_path_map/debug/mapDebugSourceSetPaths/file-map.txt b/node_modules/capacitor-nfc/android/build/intermediates/android_res_source_set_path_map/debug/mapDebugSourceSetPaths/file-map.txt
+new file mode 100644
+index 0000000..19f4da2
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/android_res_source_set_path_map/debug/mapDebugSourceSetPaths/file-map.txt
+@@ -0,0 +1,10 @@
++com.adrynov.capacitor.nfc.capacitor-nfc-pngs-0 /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/build/generated/res/pngs/debug
++com.adrynov.capacitor.nfc.capacitor-nfc-resValues-1 /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/build/generated/res/resValues/debug
++com.adrynov.capacitor.nfc.capacitor-nfc-updated_navigation_xml-2 /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/build/generated/updated_navigation_xml/debug
++com.adrynov.capacitor.nfc.capacitor-nfc-mergeDebugResources-3 /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/build/intermediates/incremental/debug/mergeDebugResources/merged.dir
++com.adrynov.capacitor.nfc.capacitor-nfc-mergeDebugResources-4 /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/build/intermediates/incremental/debug/mergeDebugResources/stripped.dir
++com.adrynov.capacitor.nfc.capacitor-nfc-debug-5 /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/build/intermediates/merged_res/debug/mergeDebugResources
++com.adrynov.capacitor.nfc.capacitor-nfc-debug-6 /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/build/intermediates/packaged_res/debug/packageDebugResources
++com.adrynov.capacitor.nfc.capacitor-nfc-debug-7 /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/debug/res
++com.adrynov.capacitor.nfc.capacitor-nfc-main-8 /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/res
++gradleHome-0 /Users/kaneco/.gradle
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json b/node_modules/capacitor-nfc/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+new file mode 100644
+index 0000000..9e26dfe
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+@@ -0,0 +1 @@
++{}
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar b/node_modules/capacitor-nfc/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar
+new file mode 100644
+index 0000000..fc46591
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar b/node_modules/capacitor-nfc/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar
+new file mode 100644
+index 0000000..a24fae6
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt b/node_modules/capacitor-nfc/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt
+new file mode 100644
+index 0000000..f7ac549
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt
+@@ -0,0 +1,3 @@
++int id webview 0x0
++int layout bridge_layout_main 0x0
++int string my_string 0x0
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/compiled_local_resources/debug/compileDebugLibraryResources/out/layout_bridge_layout_main.xml.flat b/node_modules/capacitor-nfc/android/build/intermediates/compiled_local_resources/debug/compileDebugLibraryResources/out/layout_bridge_layout_main.xml.flat
+new file mode 100644
+index 0000000..eb003cb
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/compiled_local_resources/debug/compileDebugLibraryResources/out/layout_bridge_layout_main.xml.flat differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties b/node_modules/capacitor-nfc/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+new file mode 100644
+index 0000000..5246b15
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+@@ -0,0 +1,2 @@
++#Fri Jun 05 00:16:19 EDT 2026
++com.adrynov.capacitor.nfc.capacitor-nfc-main-6\:/layout/bridge_layout_main.xml=/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/build/intermediates/packaged_res/debug/packageDebugResources/layout/bridge_layout_main.xml
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml b/node_modules/capacitor-nfc/android/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml
+new file mode 100644
+index 0000000..e95bf66
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml
+@@ -0,0 +1,4 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="my_string">Just a simple string</string>
++</resources>
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml b/node_modules/capacitor-nfc/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+new file mode 100644
+index 0000000..95ff3a2
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/res"><file name="bridge_layout_main" path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/res/layout/bridge_layout_main.xml" qualifiers="" type="layout"/><file path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/res/values/colors.xml" qualifiers=""/><file path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/res/values/styles.xml" qualifiers=""/><file path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/res/values/strings.xml" qualifiers=""><string name="my_string">Just a simple string</string></file></source></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug" generated-set="debug$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/build/generated/res/resValues/debug"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/build/generated/res/resValues/debug"/></dataSet><mergedItems/></merger>
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/incremental/mergeDebugAssets/merger.xml b/node_modules/capacitor-nfc/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
+new file mode 100644
+index 0000000..b914e8a
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/assets"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/debug/assets"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml b/node_modules/capacitor-nfc/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+new file mode 100644
+index 0000000..d36f584
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/jniLibs"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/debug/jniLibs"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/java_res/debug/processDebugJavaRes/out/META-INF/capacitor-nfc_debug.kotlin_module b/node_modules/capacitor-nfc/android/build/intermediates/java_res/debug/processDebugJavaRes/out/META-INF/capacitor-nfc_debug.kotlin_module
+new file mode 100644
+index 0000000..37f30cc
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/java_res/debug/processDebugJavaRes/out/META-INF/capacitor-nfc_debug.kotlin_module differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/adrynov/capacitor/nfc/NfcTag$TagType.class b/node_modules/capacitor-nfc/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/adrynov/capacitor/nfc/NfcTag$TagType.class
+new file mode 100644
+index 0000000..dc24552
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/adrynov/capacitor/nfc/NfcTag$TagType.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/adrynov/capacitor/nfc/NfcTag.class b/node_modules/capacitor-nfc/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/adrynov/capacitor/nfc/NfcTag.class
+new file mode 100644
+index 0000000..2b43936
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/adrynov/capacitor/nfc/NfcTag.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/adrynov/capacitor/nfc/NfcUtils.class b/node_modules/capacitor-nfc/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/adrynov/capacitor/nfc/NfcUtils.class
+new file mode 100644
+index 0000000..0bc4d3b
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/adrynov/capacitor/nfc/NfcUtils.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt b/node_modules/capacitor-nfc/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+new file mode 100644
+index 0000000..80ec5cb
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+@@ -0,0 +1,5 @@
++R_DEF: Internal format may change without notice
++local
++id webview
++layout bridge_layout_main
++string my_string
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt b/node_modules/capacitor-nfc/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+new file mode 100644
+index 0000000..178f63b
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+@@ -0,0 +1,20 @@
++1<?xml version="1.0" encoding="utf-8"?>
++2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++3    package="com.adrynov.capacitor.nfc" >
++4
++5    <uses-sdk android:minSdkVersion="24" />
++5-->INJECTED
++5-->INJECTED
++6
++7    <uses-permission android:name="android.permission.NFC" />
++7-->/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:4:5-62
++7-->/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:4:22-59
++8
++9    <uses-feature
++9-->/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:6:5-8:35
++10        android:name="android.hardware.nfc"
++10-->/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:7:9-44
++11        android:required="true" />
++11-->/Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:8:9-32
++12
++13</manifest>
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml b/node_modules/capacitor-nfc/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+new file mode 100644
+index 0000000..d68ecdb
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.adrynov.capacitor.nfc" >
++
++    <uses-sdk android:minSdkVersion="24" />
++
++    <uses-permission android:name="android.permission.NFC" />
++
++    <uses-feature
++        android:name="android.hardware.nfc"
++        android:required="true" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json b/node_modules/capacitor-nfc/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+new file mode 100644
+index 0000000..0637a08
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+@@ -0,0 +1 @@
++[]
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt b/node_modules/capacitor-nfc/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+new file mode 100644
+index 0000000..08f4ebe
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+@@ -0,0 +1 @@
++0 Warning/Error
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/packaged_res/debug/packageDebugResources/layout/bridge_layout_main.xml b/node_modules/capacitor-nfc/android/build/intermediates/packaged_res/debug/packageDebugResources/layout/bridge_layout_main.xml
+new file mode 100644
+index 0000000..b69e589
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/packaged_res/debug/packageDebugResources/layout/bridge_layout_main.xml
+@@ -0,0 +1,15 @@
++<?xml version="1.0" encoding="utf-8"?>
++<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:app="http://schemas.android.com/apk/res-auto"
++    xmlns:tools="http://schemas.android.com/tools"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent"
++    tools:context="com.getcapacitor.BridgeActivity"
++    >
++
++    <WebView
++        android:id="@+id/webview"
++        android:layout_width="fill_parent"
++        android:layout_height="fill_parent" />
++
++</android.support.design.widget.CoordinatorLayout>
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/packaged_res/debug/packageDebugResources/values/values.xml b/node_modules/capacitor-nfc/android/build/intermediates/packaged_res/debug/packageDebugResources/values/values.xml
+new file mode 100644
+index 0000000..e95bf66
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/packaged_res/debug/packageDebugResources/values/values.xml
+@@ -0,0 +1,4 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="my_string">Just a simple string</string>
++</resources>
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/META-INF/capacitor-nfc_debug.kotlin_module b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/META-INF/capacitor-nfc_debug.kotlin_module
+new file mode 100644
+index 0000000..37f30cc
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/META-INF/capacitor-nfc_debug.kotlin_module differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NFC$handleOnPause$1.class b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NFC$handleOnPause$1.class
+new file mode 100644
+index 0000000..e181fd8
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NFC$handleOnPause$1.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NFC.class b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NFC.class
+new file mode 100644
+index 0000000..8fdc8c4
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NFC.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NFCKt.class b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NFCKt.class
+new file mode 100644
+index 0000000..80438d2
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NFCKt.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcSettings.class b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcSettings.class
+new file mode 100644
+index 0000000..e9766ca
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcSettings.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcTag$TagType.class b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcTag$TagType.class
+new file mode 100644
+index 0000000..dc24552
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcTag$TagType.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcTag.class b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcTag.class
+new file mode 100644
+index 0000000..2b43936
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcTag.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcUtils.class b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcUtils.class
+new file mode 100644
+index 0000000..0bc4d3b
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/adrynov/capacitor/nfc/NfcUtils.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt b/node_modules/capacitor-nfc/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+new file mode 100644
+index 0000000..1dd2cab
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+@@ -0,0 +1,4 @@
++com.adrynov.capacitor.nfc
++id webview
++layout bridge_layout_main
++string my_string
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab
+new file mode 100644
+index 0000000..28e8fed
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.keystream
+new file mode 100644
+index 0000000..63cb67d
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.keystream.len
+new file mode 100644
+index 0000000..fa43224
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.len
+new file mode 100644
+index 0000000..01bdaa1
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.values.at
+new file mode 100644
+index 0000000..9ee0f76
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab_i
+new file mode 100644
+index 0000000..69277f5
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/inputs/source-to-output.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab
+new file mode 100644
+index 0000000..834bb84
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.keystream
+new file mode 100644
+index 0000000..41603c4
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.keystream.len
+new file mode 100644
+index 0000000..81031c2
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.len
+new file mode 100644
+index 0000000..01bdaa1
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.values.at
+new file mode 100644
+index 0000000..fc0e221
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab_i
+new file mode 100644
+index 0000000..e5a5aa2
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-attributes.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab
+new file mode 100644
+index 0000000..0dabc84
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.keystream
+new file mode 100644
+index 0000000..41603c4
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.keystream.len
+new file mode 100644
+index 0000000..81031c2
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.len
+new file mode 100644
+index 0000000..01bdaa1
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.values.at
+new file mode 100644
+index 0000000..2524a5c
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab_i
+new file mode 100644
+index 0000000..e5a5aa2
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/class-fq-name-to-source.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab
+new file mode 100644
+index 0000000..e11a643
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.keystream
+new file mode 100644
+index 0000000..89a8b3c
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.keystream.len
+new file mode 100644
+index 0000000..9da595d
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.len
+new file mode 100644
+index 0000000..93a595b
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.values.at
+new file mode 100644
+index 0000000..71b77d9
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab_i
+new file mode 100644
+index 0000000..d42a4cf
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/internal-name-to-source.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab
+new file mode 100644
+index 0000000..bdf584a
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.keystream
+new file mode 100644
+index 0000000..31ddc86
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.keystream.len
+new file mode 100644
+index 0000000..5f1f7d5
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.len
+new file mode 100644
+index 0000000..2a17e6e
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.values.at
+new file mode 100644
+index 0000000..46d6744
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab_i
+new file mode 100644
+index 0000000..47768c8
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/package-parts.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab
+new file mode 100644
+index 0000000..406ccc2
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.keystream
+new file mode 100644
+index 0000000..3f17fe2
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.keystream.len
+new file mode 100644
+index 0000000..c2d0b7d
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.len
+new file mode 100644
+index 0000000..93a595b
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.values.at
+new file mode 100644
+index 0000000..f214524
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab_i
+new file mode 100644
+index 0000000..7e8785d
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/proto.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab
+new file mode 100644
+index 0000000..0238bc7
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.keystream
+new file mode 100644
+index 0000000..63cb67d
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.keystream.len
+new file mode 100644
+index 0000000..fa43224
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.len
+new file mode 100644
+index 0000000..01bdaa1
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.values.at
+new file mode 100644
+index 0000000..af10b53
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab_i
+new file mode 100644
+index 0000000..69277f5
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/source-to-classes.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab
+new file mode 100644
+index 0000000..bdf584a
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.keystream
+new file mode 100644
+index 0000000..3ab9279
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.keystream.len
+new file mode 100644
+index 0000000..e534549
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.len
+new file mode 100644
+index 0000000..2a17e6e
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.values.at
+new file mode 100644
+index 0000000..78e1aff
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab_i
+new file mode 100644
+index 0000000..ebba356
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/subtypes.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab
+new file mode 100644
+index 0000000..bdf584a
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.keystream
+new file mode 100644
+index 0000000..d7743ef
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.keystream.len
+new file mode 100644
+index 0000000..19f7832
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.len
+new file mode 100644
+index 0000000..2a17e6e
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.values.at
+new file mode 100644
+index 0000000..c62eb16
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab_i
+new file mode 100644
+index 0000000..1254b56
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/supertypes.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/counters.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/counters.tab
+new file mode 100644
+index 0000000..2ceb12b
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/counters.tab
+@@ -0,0 +1,2 @@
++2
++0
+\ No newline at end of file
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab
+new file mode 100644
+index 0000000..37addb0
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.keystream
+new file mode 100644
+index 0000000..63cb67d
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.keystream.len
+new file mode 100644
+index 0000000..fa43224
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.len
+new file mode 100644
+index 0000000..01bdaa1
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.values.at
+new file mode 100644
+index 0000000..7d30a43
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab_i
+new file mode 100644
+index 0000000..69277f5
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/file-to-id.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab
+new file mode 100644
+index 0000000..92405d7
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.keystream
+new file mode 100644
+index 0000000..100d205
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.keystream.len
+new file mode 100644
+index 0000000..ccfcbf4
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.len
+new file mode 100644
+index 0000000..01bdaa1
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.values.at
+new file mode 100644
+index 0000000..4282dd2
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab_i
+new file mode 100644
+index 0000000..f768a77
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/id-to-file.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab
+new file mode 100644
+index 0000000..1c26a35
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.keystream b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.keystream
+new file mode 100644
+index 0000000..6d4bef6
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.keystream differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.keystream.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.keystream.len
+new file mode 100644
+index 0000000..ba3b055
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.keystream.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.len
+new file mode 100644
+index 0000000..d051b41
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.values.at b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.values.at
+new file mode 100644
+index 0000000..c2e0a3b
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab.values.at differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab_i b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab_i
+new file mode 100644
+index 0000000..f7e7faa
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab_i differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab_i.len b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab_i.len
+new file mode 100644
+index 0000000..131e265
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab_i.len differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/last-build.bin b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/last-build.bin
+new file mode 100644
+index 0000000..f037487
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/cacheable/last-build.bin differ
+diff --git a/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/classpath-snapshot/shrunk-classpath-snapshot.bin b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/classpath-snapshot/shrunk-classpath-snapshot.bin
+new file mode 100644
+index 0000000..3fec35c
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/kotlin/compileDebugKotlin/classpath-snapshot/shrunk-classpath-snapshot.bin differ
+diff --git a/node_modules/capacitor-nfc/android/build/outputs/logs/manifest-merger-debug-report.txt b/node_modules/capacitor-nfc/android/build/outputs/logs/manifest-merger-debug-report.txt
+new file mode 100644
+index 0000000..9a83ef3
+--- /dev/null
++++ b/node_modules/capacitor-nfc/android/build/outputs/logs/manifest-merger-debug-report.txt
+@@ -0,0 +1,27 @@
++-- Merging decision tree log ---
++manifest
++ADDED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:1:1-10:12
++INJECTED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:1:1-10:12
++	package
++		ADDED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:2:5-40
++		INJECTED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml
++	xmlns:android
++		ADDED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:1:11-69
++uses-permission#android.permission.NFC
++ADDED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:4:5-62
++	android:name
++		ADDED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:4:22-59
++uses-feature#android.hardware.nfc
++ADDED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:6:5-8:35
++	android:required
++		ADDED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:8:9-32
++	android:name
++		ADDED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml:7:9-44
++uses-sdk
++INJECTED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
++INJECTED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml
++INJECTED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml
++	android:targetSdkVersion
++		INJECTED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml
++	android:minSdkVersion
++		INJECTED from /Users/kaneco/Downloads/pwnnet-toolkit/node_modules/capacitor-nfc/android/src/main/AndroidManifest.xml
+diff --git a/node_modules/capacitor-nfc/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin b/node_modules/capacitor-nfc/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin
+new file mode 100644
+index 0000000..bce4097
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin differ
+diff --git a/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/META-INF/capacitor-nfc_debug.kotlin_module b/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/META-INF/capacitor-nfc_debug.kotlin_module
+new file mode 100644
+index 0000000..37f30cc
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/META-INF/capacitor-nfc_debug.kotlin_module differ
+diff --git a/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NFC$handleOnPause$1.class b/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NFC$handleOnPause$1.class
+new file mode 100644
+index 0000000..e181fd8
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NFC$handleOnPause$1.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NFC.class b/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NFC.class
+new file mode 100644
+index 0000000..8fdc8c4
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NFC.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NFCKt.class b/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NFCKt.class
+new file mode 100644
+index 0000000..80438d2
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NFCKt.class differ
+diff --git a/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NfcSettings.class b/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NfcSettings.class
+new file mode 100644
+index 0000000..e9766ca
+Binary files /dev/null and b/node_modules/capacitor-nfc/android/build/tmp/kotlin-classes/debug/com/adrynov/capacitor/nfc/NfcSettings.class differ
+diff --git a/node_modules/capacitor-nfc/android/src/main/java/com/adrynov/capacitor/nfc/NFC.kt b/node_modules/capacitor-nfc/android/src/main/java/com/adrynov/capacitor/nfc/NFC.kt
+index 09a8963..e43753e 100644
+--- a/node_modules/capacitor-nfc/android/src/main/java/com/adrynov/capacitor/nfc/NFC.kt
++++ b/node_modules/capacitor-nfc/android/src/main/java/com/adrynov/capacitor/nfc/NFC.kt
+@@ -6,58 +6,35 @@ import android.content.Intent
+ import android.content.IntentFilter
+ import android.content.pm.PackageManager
+ import android.nfc.NfcAdapter
+-import android.nfc.tech.NfcA
++import android.nfc.Tag
+ import android.util.Log
+ import com.getcapacitor.*
+-import kotlinx.coroutines.CoroutineScope
+-import kotlinx.coroutines.MainScope
+-import kotlinx.coroutines.cancel
+-import kotlinx.coroutines.launch
++import com.getcapacitor.annotation.CapacitorPlugin
++import com.getcapacitor.annotation.Permission
++import kotlinx.coroutines.*
+ 
+ private const val NFC_REQUEST_PERMISSION = 9089
+ 
+ /**
+  * Capacitor plugin that access NFC capabilities of a device.
+- *
+- * https://developer.android.com/guide/topics/connectivity/nfc/advanced-nfc#tag-tech
+  */
+-@NativePlugin(
+-        permissions = [Manifest.permission.NFC],
+-        permissionRequestCode = NFC_REQUEST_PERMISSION
++@CapacitorPlugin(
++    name = "NFC",
++    permissions = [
++        Permission(strings = [Manifest.permission.NFC], alias = "nfc")
++    ]
+ )
+-class NFC : Plugin(), CoroutineScope by MainScope() {
++class NFC : Plugin() {
+ 
+     private val TAG = NFC::class.java.simpleName
++    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+ 
+-    private val PERMISSION_NOT_SET = Manifest.permission.NFC + " permission is not set in AndroidManifest.xml"
+-
+-    private val NFC_REQUEST_PERMISSIONS = 9020
+-
+-    private val NDEF = "ndef"
+-    private val NDEF_MIME = "ndef-mime"
+-    private val NDEF_FORMATABLE = "ndef-formatable"
+-
+-    // Message constants
+-    private val MESSAGE_UNABLE_TO_PROCESS_TAG = "Unable to process NFC tag"
+-    private val EVENT_TAG_DISCOVERED = "TAG_DISCOVERED"
+-    private val EVENT_TECH_DISCOVERED = "TECH_DISCOVERED"
+-    private val EVENT_NDEF_DISCOVERED = "NDEF_DISCOVERED"
+-    private val EVENT_NDEF_FORMATTABLE_DISCOVERED = "NDEF_FORMATTABLE_DISCOVERED"
+-
+-    // TAG_DISCOVERED, TECH_DISCOVERED and/or NDEF_DISCOVERED
+     private val intentFilters = ArrayList<IntentFilter>()
+-
+-    // Supported NFC technologies (note: MIFARE Classic cards are detected as NfcA)
+     private val techLists = ArrayList<Array<String>>()
++    private val EVENT_TAG_DISCOVERED = "TAG_DISCOVERED"
+ 
+-    private val EVENT_TOKEN_ERROR = "error"
+-
+-    /**
+-     * The default NFC adapter
+-     */
+     private var nfcAdapter: NfcAdapter? = null
+-
+-    // <editor-fold desc="Adapter Status">
++    private var settings = NfcSettings()
+ 
+     private val STATUS_NFC_OK = "enabled"
+     private val STATUS_NFC_DISABLED = "disabled"
+@@ -65,22 +42,14 @@ class NFC : Plugin(), CoroutineScope by MainScope() {
+ 
+     private val adapterStatus: String
+         get() = when {
+-            // the phone does not have NFC hardware
+             nfcAdapter == null -> STATUS_NO_NFC
+-            // the NFC hardware is guaranteed not to generate or respond to any NFC communication over its NFC radio.
+             nfcAdapter?.isEnabled == false -> STATUS_NFC_DISABLED
+             else -> STATUS_NFC_OK
+         }
+-    // </editor-fold>
+-
+-    private var settings = NfcSettings()
+ 
+-    internal var watchingCalls: Map<String, PluginCall> = HashMap()
+-
+-    override fun handleOnStart() {
+-        super.handleOnStart()
+-
+-        this.nfcAdapter = NfcAdapter.getDefaultAdapter(context)?.let { it }
++    override fun load() {
++        super.load()
++        this.nfcAdapter = NfcAdapter.getDefaultAdapter(context)
+     }
+ 
+     override fun handleOnResume() {
+@@ -89,327 +58,114 @@ class NFC : Plugin(), CoroutineScope by MainScope() {
+     }
+ 
+     override fun handleOnPause() {
+-        launch {
++        scope.launch {
+             disableForegroundDispatch()
+         }
+-
+         super.handleOnPause()
+     }
+ 
+     override fun handleOnStop() {
+-        cancel() // cancel any coroutine jobs
++        scope.cancel()
+         super.handleOnStop()
+     }
+ 
+-    override fun handleRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray) {
+-        super.handleRequestPermissionsResult(requestCode, permissions, grantResults)
+-
+-        if (savedCall == null) {
+-            return
+-        }
+-
+-        grantResults.forEach {
+-            if (it == PackageManager.PERMISSION_DENIED) {
+-                savedCall.error("User denied NFC permission")
+-                return
+-            }
+-        }
+-
+-        if (savedCall.methodName.equals(NFC::getStatus.name)) {
+-            getStatus(savedCall)
+-        } else {
+-            savedCall.resolve()
+-            savedCall.release(bridge)
+-        }
+-    }
+-
+     override fun handleOnNewIntent(intent: Intent?) {
+         super.handleOnNewIntent(intent)
+-
+-        val callingActivity = this.bridge.activity
+-
+         if (intent != null) {
+-            callingActivity.intent = intent
+             processTag(intent)
+         }
+     }
+ 
+     private fun processTag(intent: Intent) {
+-        if (intent.action.isNullOrBlank()) {
+-            return
+-        }
++        val action = intent.action ?: return
++        if (action == NfcAdapter.ACTION_NDEF_DISCOVERED ||
++            action == NfcAdapter.ACTION_TECH_DISCOVERED ||
++            action == NfcAdapter.ACTION_TAG_DISCOVERED) {
+             
+-//        val tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
+-//        val nfcTag = NfcTag(tag)
++            val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG) ?: return
+             
+-        when (intent.action) {
++            val data = JSObject()
++            data.put("id", toHexString(tag.id))
++            data.put("techList", JSArray(tag.techList.toList()))
+             
+-            NfcAdapter.ACTION_NDEF_DISCOVERED -> {
+-                // Ndef ndef = Ndef.get(tag);
+-                // Parcelable[] messages =
+-                // intent.getParcelableArrayExtra((NfcAdapter.EXTRA_NDEF_MESSAGES));
+-                // fireNdefEvent(NDEF_MIME, ndef, messages);
+-            }
+-
+-            NfcAdapter.ACTION_TECH_DISCOVERED -> {
+-                // for (String tagTech : tag.getTechList()) {
+-                // Log.d(TAG, tagTech);
+-                // if (tagTech.equals(NdefFormatable.class.getName())) {
+-                // fireNdefFormatableEvent(tag);
+-                // } else if (tagTech.equals(Ndef.class.getName())) { //
+-                // Ndef ndef = Ndef.get(tag);
+-                // fireNdefEvent(NDEF, ndef, messages);
+-                // }
+-                // }
+-            }
+-
+-            NfcAdapter.ACTION_TAG_DISCOVERED -> {
+-//                sendEvent(EVENT_TAG_DISCOVERED, tag);
+-            }
++            notifyListeners(EVENT_TAG_DISCOVERED, data, true)
+         }
+-
+-//        this.bridge.activity.intent = Intent()
+     }
+ 
+-    // <editor-fold desc="Plugin Methods">
+-
+-    /**
+-     * Checks whether NFC is enabled and turned on.
+-     */
+-    @PluginMethod
+-    fun getStatus(call: PluginCall) {
+-        // Check NFC permission is granted
+-        if (!hasPermission(Manifest.permission.NFC)) {
+-            saveCall(call)
+-            pluginRequestAllPermissions()
+-            return
+-        }
+-
+-        val ret = JSObject().apply {
+-            put("status", adapterStatus)
++    private fun toHexString(bytes: ByteArray): String {
++        val sb = StringBuilder()
++        for (b in bytes) {
++            sb.append(String.format("%02X:", b))
+         }
+-
+-        return call.success(ret)
++        return if (sb.isNotEmpty()) sb.substring(0, sb.length - 1) else ""
+     }
+ 
+-    /**
+-     * Returns information about the touched NFC tag.
+-     */
+     @PluginMethod
+-    fun getTagInfo(call: PluginCall) {
+-        call.unimplemented()
+-//
+-//        call.save()
+-//
+-//        if (!hasPermission(Manifest.permission.NFC)) {
+-//            saveCall(call)
+-//            pluginRequestAllPermissions()
+-//            return
+-//        }
+-
+-        // TODO
+-//        watchingCalls.put(call.getCallbackId(), call)
++    fun getStatus(call: PluginCall) {
++        val ret = JSObject()
++        ret.put("status", adapterStatus)
++        call.resolve(ret)
+     }
+ 
+     @PluginMethod
+     fun startScanning(call: PluginCall) {
+         if (adapterStatus != STATUS_NFC_OK) {
+-            // No NFC hardware or NFC is disabled by the user
+             call.reject(adapterStatus)
+             return
+         }
+-
+-        saveCall(call)
+-        parseSettings(call)
+-
+-        // TAG_DISCOVERED - most generic
+-        intentFilters.add(IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED))
+-
+-//        if (settings.techEnabled()) {
+-//            intentFilters.add(new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED))
+-//            techLists.add(new String[] { "android.nfc.tech.NfcA" })
+-//        }
+-//
+-//        if (settings.ndefEnabled()) {
+-//            IntentFilter intentFilter = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED)
+-//
+-//            try {
+-//                intentFilter.addDataType("*/*")
+-//            } catch (IntentFilter.MalformedMimeTypeException e) {
+-//                e.printStackTrace()
+-//            }
+-//
+-//            techLists.add(new String[] { "android.nfc.tech.NfcA" })
+-//            techLists.add(new String[] { Ndef.class.getName() })
+-//
+-//            if (settings.ndefFormattableEnabled()) {
+-//                techLists.add(new String[] { NdefFormatable.class.getName() })
+-//            }
+-//        }
+-
+-        restartForegroundDispatch()
+-        call.success()
++        enableForegroundDispatch()
++        call.resolve()
+     }
+ 
+     @PluginMethod
+     fun stopScanning(call: PluginCall) {
+-        removeTagDiscoveredFilter()
+-        removeTechFilter()
+-
+-        if (settings.ndefEnabled) {
+-//            removeIntentFilter("*/*")
+-//            this.removeFromTechList(new String[] { Ndef.class.getName() })
+-        }
+-
+         disableForegroundDispatch()
+-        call.success()
+-    }
+-
+-    @PluginMethod
+-    fun showSettings(call: PluginCall) {
+-        val intent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN)
+-            Intent(android.provider.Settings.ACTION_NFC_SETTINGS) else
+-            Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS)
+-
+-        val callingActivity = this.bridge.activity
+-        callingActivity.startActivity(intent)
+-
+-        call.success()
++        call.resolve()
+     }
+ 
+-    // </editor-fold>
+-
+-    // <editor-fold desc="Foreground Dispatch">
+-
+-    // https://developer.android.com/guide/topics/connectivity/nfc/advanced-nfc#foreground-dispatch
+     private fun enableForegroundDispatch() {
+-        Log.d(TAG, "Enabling foreground dispatch")
++        if (this.nfcAdapter == null) return
+ 
+-        // No NFC hardware
+-        if (this.nfcAdapter == null) {
+-            Log.e(TAG, STATUS_NO_NFC)
+-            return
+-        }
+-
+-        val callingActivity = this.bridge.activity
++        val activity = bridge.activity
++        if (activity == null || activity.isFinishing) return
+ 
+-        if (callingActivity == null || callingActivity.isFinishing) {
+-            Log.w(TAG, "Activity is not running")
+-            return
++        val intent = Intent(context, activity.javaClass).apply {
++            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+         }
+ 
+-        val intent = Intent(context, callingActivity.javaClass).apply {
+-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
++        val flags = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
++            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
++        } else {
++            PendingIntent.FLAG_UPDATE_CURRENT
+         }
+ 
+-        // The Android system can populate this with the details of the tag when it is scanned.
+-        val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
++        val pendingIntent = PendingIntent.getActivity(context, 0, intent, flags)
+         
+-        // Declare the intents that you want to intercept: TAG_DISCOVERED, TECH_DISCOVERED or NDEF_DISCOVERED
+         val ndef = IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED).apply {
+             try {
+-                /* Handles all MIME based dispatches.You should specify only the ones that you need. */
+                 addDataType("*/*")
+-            } catch (e: IntentFilter.MalformedMimeTypeException) {
+-                throw RuntimeException("fail", e)
+-            }
++            } catch (e: IntentFilter.MalformedMimeTypeException) {}
+         }
++        val filters = arrayOf(ndef, IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED), IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED))
++        val techList = arrayOf(arrayOf<String>(android.nfc.tech.NfcA::class.java.name))
+ 
+-        val intentFilters = intentFilters.toTypedArray() // arrayOf(ndef)
+-
+-        // Supported NFC technologies
+-        val techList = arrayOf(
+-//                arrayOf(MifareUltralight::class.java.name, Ndef::class.java.name, NfcA::class.java.name),
+-//                arrayOf(MifareClassic::class.java.name, Ndef::class.java.name, NfcA::class.java.name),
+-                arrayOf<String>(NfcA::class.java.name)
+-        )
+-
+-        if (intentFilters.isNotEmpty() || techList.isNotEmpty()) {
+-            nfcAdapter?.enableForegroundDispatch(callingActivity, pendingIntent, intentFilters, techList)
+-        }
+-    }
+-
+-    /**
+-     * Stop listening for NFC data.
+-     */
+-    private fun disableForegroundDispatch() {
+-        Log.d(TAG, "Stopping NFC")
+-
+-        val callingActivity = this.bridge.activity
+-
+-        try {
+-            nfcAdapter?.disableForegroundDispatch(callingActivity)
+-        } catch (e: IllegalStateException) {
+-            Log.w(TAG, e)
+-        }
+-
+-//        callingActivity.runOnUiThread {
+-//            try {
+-//                nfcAdapter?.disableForegroundDispatch(callingActivity)
+-//            } catch (e: IllegalStateException) {
+-//                Log.w(TAG, e)
+-//            }
+-//        }
+-    }
+-
+-    private fun restartForegroundDispatch() {
+-        Log.d(TAG, "Restarting NFC")
+-
+-        val callingActivity = this.bridge.activity
+-
+-        callingActivity.runOnUiThread {
++        activity.runOnUiThread {
+             try {
+-                nfcAdapter?.disableForegroundDispatch(callingActivity)
+-                enableForegroundDispatch()
+-            } catch (e: IllegalStateException) {
+-                Log.w(TAG, e)
++                nfcAdapter?.enableForegroundDispatch(activity, pendingIntent, filters, techList)
++            } catch (e: Exception) {
++                Log.e(TAG, "Error enabling foreground dispatch", e)
+             }
+         }
+     }
+ 
+-    // </editor-fold>
+-
+-    private fun getIntentFilters(): Array<IntentFilter> {
+-        return intentFilters.toTypedArray()
+-    }
+-
+-    /**
+-     * Parse the call's options into {@see NfcSettings}
+-     */
+-    private fun parseSettings(call: PluginCall?) {
+-        if (call != null) {
+-            settings.techEnabled = call.getBoolean("techEnabled", true)
+-            settings.ndefEnabled = call.getBoolean("ndefEnabled", false)
+-            settings.ndefFormattable = call.getBoolean("ndefFormattable", false)
+-        } else {
+-            settings.techEnabled = false
+-            settings.ndefEnabled = false
+-            settings.ndefFormattable = false
+-        }
+-    }
+-
+-    private fun removeTagDiscoveredFilter() {
+-        intentFilters.forEach {
+-            if (it.getAction(0).equals(NfcAdapter.ACTION_TAG_DISCOVERED)) {
+-                intentFilters.remove(it)
++    private fun disableForegroundDispatch() {
++        val activity = bridge.activity ?: return
++        activity.runOnUiThread {
++            try {
++                nfcAdapter?.disableForegroundDispatch(activity)
++            } catch (e: Exception) {
++                Log.e(TAG, "Error disabling foreground dispatch", e)
+             }
+         }
+-//        Iterator<IntentFilter> iterator = intentFilters.iterator()
+-    }
+-
+-    private fun removeTechFilter() {
+-//        Iterator<IntentFilter> iterator = intentFilters.iterator()
+-//        while (iterator.hasNext()) {
+-//            IntentFilter intentFilter = iterator.next()
+-//            if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(intentFilter.getAction(0))) {
+-//                iterator.remove()
+-//            }
+-//        }
+-    }
+-
+-    private fun sendError(error: String) {
+-        val data = JSObject()
+-        data.put("error", error)
+-        notifyListeners(EVENT_TOKEN_ERROR, data, true)
+     }
+ }
+diff --git a/node_modules/capacitor-nfc/dist/esm/web.js b/node_modules/capacitor-nfc/dist/esm/web.js
+index 1b05d0f..df1c45b 100644
+--- a/node_modules/capacitor-nfc/dist/esm/web.js
++++ b/node_modules/capacitor-nfc/dist/esm/web.js
+@@ -27,6 +27,4 @@ export class NFCPluginWeb extends WebPlugin {
+ }
+ const NFC = new NFCPluginWeb();
+ export { NFC };
+-import { registerWebPlugin } from '@capacitor/core';
+-registerWebPlugin(NFC);
+ //# sourceMappingURL=web.js.map
+\ No newline at end of file
