@@ -1,6 +1,7 @@
 import express from 'express';
 import 'dotenv/config';
 import path from 'path';
+import fs from 'fs';
 import net from 'net';
 import dns from 'dns';
 import { promisify } from 'util';
@@ -1904,6 +1905,10 @@ async function startServer() {
 
   if (isProd) {
     const distPath = path.join(process.cwd(), 'dist');
+    // Ensure dist exists
+    if (!fs.existsSync(distPath)) {
+      console.error('[PWNNET] CRITICAL: dist folder not found! Build may have failed.');
+    }
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       if (req.path.startsWith('/api')) {

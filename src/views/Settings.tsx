@@ -213,6 +213,7 @@ export function Settings() {
 
         {/* Firmware Version Telemetry details */}
         <div className="p-2 text-center text-[9px] text-gray-500 font-mono space-y-1">
+          <div className="text-neon-green/40 mb-2">TARGET GATEWAY: {backendUrl}</div>
           <div>PWNNET OPERATIONAL FIRMWARE // CORE v16.6.11</div>
           <div className="tracking-widest text-[8px] opacity-75">MD5: AF47F9F5C4F2FA4141A1CB4A5B17460A</div>
         </div>

