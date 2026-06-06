@@ -1683,26 +1683,37 @@ async function generateAIResponse(prompt: string) {
   // 2. Try Gemini if configured
   const client = getAiClient();
   if (client) {
-    // We try gemini-pro first as it is the most widely available stable version
-    const modelsToTry = ['gemini-pro', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro'];
+    // Broadest possible list of Gemini model names to resolve the 404 issue
+    const modelsToTry = [
+      'gemini-1.5-flash',
+      'gemini-1.5-flash-latest',
+      'gemini-pro',
+      'gemini-1.0-pro',
+      'gemini-1.0-pro-latest'
+    ];
     let lastError = '';
 
     for (const modelName of modelsToTry) {
       try {
+        console.log(`[AI] Checking availability for: ${modelName}`);
         const model = client.getGenerativeModel({ model: modelName });
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        return response.text();
+        const text = response.text();
+        if (text) {
+          console.log(`[AI] Success using model: ${modelName}`);
+          return text;
+        }
       } catch (e: any) {
         lastError = e.message;
-        if (e.message.includes('404') || e.message.includes('not found')) {
-          console.log(`[AI] Model ${modelName} not available, trying next...`);
+        // If it's a 404, try the next model. Otherwise, break and report.
+        if (e.message.toLowerCase().includes('not found') || e.message.includes('404')) {
           continue;
         }
         break;
       }
     }
-    return `[GEMINI ERROR] ${lastError || 'Model access restricted or API key invalid.'}`;
+    return `[GEMINI ERROR] ${lastError || 'Model discovery failed. Check API key permissions.'}`;
   }
 
   const missingKey = (!process.env.OPENAI_API_KEY && !process.env.GEMINI_API_KEY)
