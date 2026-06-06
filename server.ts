@@ -6,7 +6,7 @@ import net from 'net';
 import dns from 'dns';
 import { promisify } from 'util';
 import cors from 'cors';
-import { createClient } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 
 const resolveMx = promisify(dns.resolveMx);
 const resolveTxt = promisify(dns.resolveTxt);
@@ -1611,15 +1611,15 @@ app.get('/api/net/wpscan', async (req, res) => {
   });
 
 // Initialize AI Client
-let aiClient: any = null;
+let genAI: any = null;
 
 function getAiClient() {
-  if (aiClient) return aiClient;
+  if (genAI) return genAI;
   const key = process.env.GEMINI_API_KEY;
   if (key) {
-    aiClient = createClient({ apiKey: key });
+    genAI = new GoogleGenAI(key);
   }
-  return aiClient;
+  return genAI;
 }
 
 // AI Diagnostic endpoint
@@ -1659,23 +1659,22 @@ async function generateAIResponse(prompt: string) {
     }
   }
 
-  // 2. Try Gemini if configured (Unified SDK)
+  // 2. Try Gemini if configured
   const client = getAiClient();
   if (client) {
     try {
-      const result = await client.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: prompt,
-        config: {
-          safetySettings: [
-            { category: 'HATE_SPEECH', threshold: 'BLOCK_NONE' },
-            { category: 'DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-            { category: 'HARASSMENT', threshold: 'BLOCK_NONE' },
-            { category: 'SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' }
-          ]
-        }
+      const model = client.getGenerativeModel({
+        model: 'gemini-1.5-flash',
+        safetySettings: [
+          { category: 'HATE_SPEECH', threshold: 'BLOCK_NONE' },
+          { category: 'DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+          { category: 'HARASSMENT', threshold: 'BLOCK_NONE' },
+          { category: 'SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' }
+        ]
       });
-      return result.text;
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
     } catch (e) {
       console.error('Gemini Error:', e);
     }

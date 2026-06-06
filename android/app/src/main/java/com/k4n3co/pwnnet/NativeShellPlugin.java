@@ -39,9 +39,15 @@ public class NativeShellPlugin extends Plugin {
             int exitCode = process.waitFor();
             
             JSObject ret = new JSObject();
-            ret.put("output", output.toString());
-            ret.put("error", errorOutput.toString());
-            ret.put("exitCode", exitCode);
+            if (exitCode == 127) {
+                ret.put("output", "");
+                ret.put("error", "BINARY_NOT_FOUND: The command '" + command.split(" ")[0] + "' was not found on this device. Native tools require root or a pre-installed environment like Termux.");
+                ret.put("exitCode", 127);
+            } else {
+                ret.put("output", output.toString());
+                ret.put("error", errorOutput.toString());
+                ret.put("exitCode", exitCode);
+            }
             call.resolve(ret);
         } catch (Exception e) {
             call.reject("Execution failed: " + e.getMessage());

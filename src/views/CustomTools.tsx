@@ -983,6 +983,7 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
   const [devices, setDevices] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'scanner' | 'beacon'>('scanner');
   const [spamming, setSpamming] = useState(false);
+  const hardwareLocked = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -1019,26 +1020,37 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
   };
 
   const killActive = async () => {
-    if (!Capacitor.isNativePlatform()) return;
-    setMessage('Hardware Reset...');
+    if (!Capacitor.isNativePlatform()) return true;
+    if (hardwareLocked.current) return false;
+    hardwareLocked.current = true;
+
+    setMessage('Purging Radio State...');
     try {
-      // Mandatory stop for all BLE subsystems
       await BleClient.stopLEScan().catch(() => {});
+      await new Promise(r => setTimeout(r, 400));
       await BleClient.stopAdvertising().catch(() => {});
     } catch(e) {}
+
     setScanning(false);
     setSpamming(false);
-    // Increased delay for hardware stabilization
-    await new Promise(r => setTimeout(r, 1200));
+
+    // Physical chip stabilization delay
+    await new Promise(r => setTimeout(r, 2000));
+    hardwareLocked.current = false;
+    return true;
   };
 
   const startScan = async () => {
     (document.activeElement as HTMLElement)?.blur();
     try {
       if (Capacitor.isNativePlatform()) {
-        await killActive();
-        await ensureBleEnabled();
+        const ready = await killActive();
+        if (!ready) {
+          setMessage('Hardware Lock Active. Wait...');
+          return;
+        }
 
+        await ensureBleEnabled();
         setScanning(true);
         setMessage('Sniffing Packets...');
         
@@ -1076,7 +1088,8 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
         setScanning(false);
       }
     } catch (error: any) {
-      setMessage('BT Stack Busy. Toggle BT.');
+      console.error('BLE SCAN FAIL', error);
+      setMessage('Hardware Fault. Restart BT.');
       setScanning(false);
     }
   };
@@ -1087,14 +1100,19 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
       return;
     }
     try {
-      await killActive();
+      const ready = await killActive();
+      if (!ready) {
+        setMessage('Hardware Locked. Wait...');
+        return;
+      }
+
       setSpamming(true);
       setMessage(`Priming ${type.toUpperCase()}...`);
 
       await ensureBleEnabled();
 
-      // Cooldown after enabling
-      await new Promise(r => setTimeout(r, 800));
+      // Post-init cooldown
+      await new Promise(r => setTimeout(r, 1000));
 
       let mId = 0x004c; // Apple
       let mData: number[] = [0x07, 0x19, 0x07, 0x02, 0x20, 0x75, 0xaa, 0x30];
