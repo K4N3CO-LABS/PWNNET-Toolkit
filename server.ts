@@ -1657,88 +1657,49 @@ app.get('/api/net/ai_status', async (req, res) => {
 
 // Generic AI Generator helper
 async function generateAIResponse(prompt: string) {
-  // 1. Try OpenAI if configured
-  if (process.env.OPENAI_API_KEY) {
+  const rawKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  const key = rawKey ? rawKey.trim() : null;
+
+  if (!key) {
+    return `[AI ERROR] No GEMINI_API_KEY found in Render environment variables.`;
+  }
+
+  // Use direct REST API to avoid SDK model-lookup bugs
+  const models = ['gemini-1.5-flash', 'gemini-pro'];
+
+  for (const model of models) {
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      console.log(`[AI] Querying ${model} via REST...`);
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${key}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY.trim()}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }]
+          contents: [{ parts: [{ text: prompt }] }],
+          safetySettings: [
+            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
+          ]
         })
       });
+
       const data = await response.json();
-      if (data.choices?.[0]?.message?.content) {
-        return data.choices[0].message.content;
+
+      if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        return data.candidates[0].content.parts[0].text;
       }
-    } catch (e) {
-      console.error('OpenAI Error:', e);
+
+      console.warn(`[AI] ${model} failed:`, data.error?.message || 'Unknown error');
+      if (data.error?.message?.includes('API key not valid')) {
+        return `[AI ERROR] Your API key is invalid. Please check the value in Render settings.`;
+      }
+    } catch (e: any) {
+      console.error(`[AI] REST Fetch Error for ${model}:`, e.message);
     }
   }
 
-  // 2. Try Gemini if configured
-  const client = getAiClient();
-  if (client) {
-    // Robust list of all possible model names to combat the 404 issue
-    const modelsToTry = [
-      'gemini-1.5-flash',
-      'gemini-1.5-pro',
-      'gemini-pro',
-      'gemini-1.0-pro',
-      'gemini-2.0-flash-exp'
-    ];
-    let lastError = '';
-
-    for (const modelName of modelsToTry) {
-      try {
-        console.log(`[AI] Checking: ${modelName}`);
-        const model = client.getGenerativeModel({ model: modelName });
-
-        // Use a timeout for the actual generation
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
-
-        if (text) {
-          console.log(`[AI] SUCCESS: Using ${modelName}`);
-          return text;
-        }
-      } catch (e: any) {
-        const errMsg = e.message || '';
-        lastError = errMsg;
-        console.warn(`[AI] ${modelName} failed: ${errMsg}`);
-
-        // If it's NOT a 404/Not Found (e.g., 429 Rate Limit or 403 Invalid Key), stop immediately.
-        const isNotFound = errMsg.includes('404') || errMsg.toLowerCase().includes('not found');
-        if (!isNotFound) {
-           break;
-        }
-        // Otherwise, continue to next model in loop
-      }
-    }
-    return `[GEMINI ERROR] ${lastError || 'Service unavailable. Verify GEMINI_API_KEY in Render dashboard.'}`;
-  }
-
-  const missingKey = (!process.env.OPENAI_API_KEY && !process.env.GEMINI_API_KEY)
-    ? "OPENAI_API_KEY and GEMINI_API_KEY"
-    : !process.env.OPENAI_API_KEY ? "OPENAI_API_KEY" : "GEMINI_API_KEY";
-
-  return `[PWNNET SIMULATION MODE]
-
-  CRITICAL: The backend is missing your AI keys (${missingKey}).
-
-  TO FIX:
-  1. Open dashboard.render.com
-  2. Go to 'Environment' tab
-  3. Add 'GEMINI_API_KEY' with your value from aistudio.google.com
-  4. Save and Redeploy.
-
-  RESEARCH DATA (Simulated):
-  ${prompt.substring(0, 100)}...`;
+  return `[AI ERROR] All models failed. Ensure your API key is correct and you have "Generative Language API" enabled in Google Cloud Console.`;
 }
 
 // AI Vulnerability Analyzer endpoint

@@ -1129,15 +1129,15 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
       try {
         const payload = {
           manufacturerId: mId,
-          manufacturerData: Array.from(new Uint8Array(mData)),
-          services: ["FE2C"] // Dummy service to keep radio stack active
+          manufacturerData: mData,
+          services: ["FE2C"] // dummy service for driver stability
         };
 
         await BleClient.startAdvertising(payload);
         setMessage(`BROADCAST ACTIVE: ${type.toUpperCase()}`);
       } catch (inner: any) {
         console.error('BLE ADVERTISE FAIL', inner);
-        setMessage(`DRIVER FAIL: ${inner.message || 'Busy'}. Cycle phone Bluetooth.`);
+        setMessage(`DRIVER FAIL: ${inner.message || 'Busy'}. Reset Phone BT.`);
         setSpamming(false);
       }
     } catch (error: any) {
