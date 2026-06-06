@@ -1090,7 +1090,7 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
       case 'mac': return 'enter mac address (e.g. 00:1A:2B:...)';
       case 'certs': case 'mail': case 'dns': case 'dorks':
         return 'enter domain (e.g. example.com)';
-      case 'pwned': return 'enter email address (e.g. example@gmail.com)';
+      case 'pwned': return 'enter email address (e.g. target@email.com)';
       case 'vt': case 'ip_host': case 'blacklist': case 'whois': case 'ping':
         return 'enter domain or ip address';
       case 'net_scan': return 'enter network subnet or ip (e.g. 192.168.1.0/24)';

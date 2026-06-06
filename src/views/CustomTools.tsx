@@ -1027,15 +1027,15 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
     setMessage('Purging Radio State...');
     try {
       await BleClient.stopLEScan().catch(() => {});
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise(r => setTimeout(r, 600));
       await BleClient.stopAdvertising().catch(() => {});
     } catch(e) {}
 
     setScanning(false);
     setSpamming(false);
 
-    // Physical chip stabilization delay
-    await new Promise(r => setTimeout(r, 2000));
+    // Physical chip stabilization delay - Vital for Android 13+
+    await new Promise(r => setTimeout(r, 2500));
     hardwareLocked.current = false;
     return true;
   };
@@ -1126,16 +1126,21 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
       }
 
       // NO NAME - many drivers crash if name + mData > 26 bytes
-      await BleClient.startAdvertising({
-        services: [],
-        manufacturerId: mId,
-        manufacturerData: mData
-      });
-
-      setMessage(`SPOOF LIVE: ${type.toUpperCase()}`);
+      try {
+        await BleClient.startAdvertising({
+          services: [],
+          manufacturerId: mId,
+          manufacturerData: mData
+        });
+        setMessage(`SPOOFING ACTIVE: ${type.toUpperCase()}`);
+      } catch (inner: any) {
+        console.error('BLE ADVERTISE NATIVE ERROR', inner);
+        setMessage(`Driver Error: ${inner.message || 'Busy'}`);
+        setSpamming(false);
+      }
     } catch (error: any) {
-      console.error('BLE SPAM FAIL', error);
-      setMessage('Driver Error. Toggle BT.');
+      console.error('BLE SPAM CRITICAL FAIL', error);
+      setMessage('Hardware Fault. Cycle BT.');
       setSpamming(false);
     }
   };

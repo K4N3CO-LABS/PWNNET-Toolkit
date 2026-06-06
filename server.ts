@@ -1615,16 +1615,23 @@ let genAI: any = null;
 
 function getAiClient() {
   if (genAI) return genAI;
-  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-  if (key) {
+
+  // Try multiple common key names to be robust
+  const key = process.env.GEMINI_API_KEY ||
+              process.env.GOOGLE_API_KEY ||
+              process.env.GEMINI_KEY ||
+              process.env.API_KEY;
+
+  if (key && key.length > 10) {
     try {
       genAI = new GoogleGenerativeAI(key);
-      console.log('[AI] Gemini Client Initialized successfully.');
+      console.log(`[AI] Gemini Client Initialized (Key: ${key.substring(0, 4)}***${key.substring(key.length - 4)})`);
     } catch (e) {
       console.error('[AI] Gemini Init Error:', e);
     }
   } else {
-    console.warn('[AI] MISSING API KEY: Please set GEMINI_API_KEY in Render environment.');
+    console.warn('[AI] MISSING API KEY: Please set GEMINI_API_KEY in Render dashboard.');
+    console.log('[AI] Available Env Vars:', Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('API')));
   }
   return genAI;
 }
