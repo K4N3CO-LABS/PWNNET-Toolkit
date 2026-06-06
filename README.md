@@ -2,7 +2,7 @@
 
 [![homescreen.png](https://i.postimg.cc/BZgFgfkK/homescreen.png)](https://postimg.cc/Jtstrv1r)
 
-**PWN//NET** is the ultimate ethical bug-hunting and networking toolkit designed for security researchers, penetration testers, and enthusiasts. From identifying critical vulnerabilities to uncovering hidden attack surfaces, PWN//NET equips you with **40+ real-world scanners and diagnostic tools** to find exploitable bugs, exposed secrets, and misconfigurations — all in a clean, responsive interface.
+**PWN//NET** is the ultimate ethical bug-hunting and networking toolkit designed for security researchers, penetration testers, and enthusiasts. From identifying critical vulnerabilities to uncovering hidden attack surfaces, PWN//NET equips you with **45+ real-world scanners and diagnostic tools** to find exploitable bugs, exposed secrets, and misconfigurations — all in a clean, responsive interface.
 
 Whether you're a beginner learning the ropes of ethical hacking or a seasoned professional hunting for bounties on production targets, PWN//NET provides the advanced reconnaissance capabilities you need to succeed.
 
@@ -12,21 +12,22 @@ Whether you're a beginner learning the ropes of ethical hacking or a seasoned pr
 
 ## ✨ Core Features
 
-- **⚡ Tools Grid** — 43 ready-to-use tools including:
+- **⚡ Tools Grid** — 48 ready-to-use tools including:
+  - CVE Database & ExploitDB 
+  - AI Vulnerability Analyzer
   - Subdomain Enumeration
   - JS Secrets & Endpoint Scanner
   - CORS Misconfiguration Audit
+  - Extensive Dork tool
   - Web Crawler
   - WordPress Scanner
   - Admin Finder
   - Have I Been Pwned
   - Phone Crawler
-  - Ping & Ping Sweep
+  - NFC & Bluetooth 
   - Port Scanning
-  - SSH Connection Tester
-  - DNS Lookup
-  - WHOIS
-  - SSL Certificate Info
+  - LLM Jailbreaker
+  - Native Nmap
   - And many more...
 
 - **🐞 Ethical Bug Hunting** — Purpose-built for security researchers, beginners, and seasoned professionals to identify real attack vectors like exposed API keys, subdomains, and loose CORS policies.
@@ -45,9 +46,8 @@ Whether you're a beginner learning the ropes of ethical hacking or a seasoned pr
 ---
 
 ### 📱 Mobile App (Android)
->***Work in progress. Re-writing in Kotlin (Androids native language) for better reliability, speed and feature access*
 
-1. Download the latest **`.apk`** from the [Releases](https://github.com/K4Links/PWNNET-Toolkit/releases) page.
+1. Download the latest **`.apk`** from the [Releases](https://github.com/K4N3CO-LABS/PWNNET-Toolkit/releases) page.
 2. Enable **"Install from Unknown Sources"** in your Android security settings.
 3. Install and open the app.
 
@@ -59,7 +59,7 @@ Whether you're a beginner learning the ropes of ethical hacking or a seasoned pr
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/K4Links/PWNNET-Toolkit.git
+git clone https://github.com/K4N3CO-LABS/PWNNET-Toolkit.git
 
 # 2. Navigate into the project
 cd PWNNET-Toolkit-main
