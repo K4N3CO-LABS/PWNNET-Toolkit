@@ -7,6 +7,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(NativeShellPlugin.class);
         super.onCreate(savedInstanceState);
 
         // This allows the app to draw behind the system bars

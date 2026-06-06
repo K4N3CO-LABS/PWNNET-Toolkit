@@ -42,11 +42,6 @@ export function TopBar({ title, onAboutClick, onFavoritesClick }: TopBarProps) {
           className="h-[36px] sm:h-[48px] w-auto object-contain hover:scale-105 transition-all duration-300 opacity-90 mix-blend-screen contrast-125 shrink-0" 
           referrerPolicy="no-referrer" 
         />
-        {title.toLowerCase() !== 'pwnnet tools' && (
-          <span className="px-1.5 sm:px-2 py-0.5 rounded-md bg-neon-green/10 border border-neon-green/35 text-[9px] sm:text-[10px] text-neon-green font-extrabold tracking-widest truncate">
-            {title.toUpperCase()}
-          </span>
-        )}
       </div>
 
       <div className="flex items-center gap-1.5 sm:space-x-2 text-[10px] font-mono shrink-0">

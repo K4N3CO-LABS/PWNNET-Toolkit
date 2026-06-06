@@ -6,7 +6,7 @@ import net from 'net';
 import dns from 'dns';
 import { promisify } from 'util';
 import cors from 'cors';
-import { GoogleGenAI } from '@google/genai';
+import { createClient } from '@google/genai';
 
 const resolveMx = promisify(dns.resolveMx);
 const resolveTxt = promisify(dns.resolveTxt);
@@ -1611,24 +1611,23 @@ app.get('/api/net/wpscan', async (req, res) => {
   });
 
 // Initialize AI Client
-let geminiClient: any = null;
-const AI_PROVIDER = process.env.AI_PROVIDER || 'gemini';
+let aiClient: any = null;
 
-function getGeminiClient() {
-  if (geminiClient) return geminiClient;
+function getAiClient() {
+  if (aiClient) return aiClient;
   const key = process.env.GEMINI_API_KEY;
-  if (key) geminiClient = new GoogleGenAI({ apiKey: key });
-  return geminiClient;
+  if (key) {
+    aiClient = createClient({ apiKey: key });
+  }
+  return aiClient;
 }
 
 // AI Diagnostic endpoint
 app.get('/api/net/ai_status', async (req, res) => {
-  const provider = AI_PROVIDER.toUpperCase();
   const hasGemini = !!process.env.GEMINI_API_KEY;
   const hasOpenAI = !!process.env.OPENAI_API_KEY;
 
   res.json({
-    activeProvider: provider,
     gemini: hasGemini ? 'READY' : 'MISSING_KEY',
     openai: hasOpenAI ? 'READY' : 'MISSING_KEY',
     simulationMode: (!hasGemini && !hasOpenAI) ? 'ON' : 'OFF'
@@ -1652,20 +1651,29 @@ async function generateAIResponse(prompt: string) {
         })
       });
       const data = await response.json();
-      return data.choices[0].message.content;
+      if (data.choices?.[0]?.message?.content) {
+        return data.choices[0].message.content;
+      }
     } catch (e) {
       console.error('OpenAI Error:', e);
     }
   }
 
-  // 2. Try Gemini if configured
-  const gClient = getGeminiClient();
-  if (gClient) {
+  // 2. Try Gemini if configured (Unified SDK)
+  const client = getAiClient();
+  if (client) {
     try {
-      const result = await gClient.models.generateContent({
-        model: 'gemini-1.5-flash',
+      const result = await client.models.generateContent({
+        model: 'gemini-2.0-flash',
         contents: prompt,
-        config: { safetySettings: [{ category: 'HATE_SPEECH', threshold: 'OFF' }, { category: 'DANGEROUS_CONTENT', threshold: 'OFF' }, { category: 'HARASSMENT', threshold: 'OFF' }, { category: 'SEXUALLY_EXPLICIT', threshold: 'OFF' }] }
+        config: {
+          safetySettings: [
+            { category: 'HATE_SPEECH', threshold: 'BLOCK_NONE' },
+            { category: 'DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+            { category: 'HARASSMENT', threshold: 'BLOCK_NONE' },
+            { category: 'SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' }
+          ]
+        }
       });
       return result.text;
     } catch (e) {

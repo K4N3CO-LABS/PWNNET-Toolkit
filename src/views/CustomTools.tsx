@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ClearableInput } from '../components/ClearableInput';
 import { ToolDef } from '../types';
 import { CustomToolLayout } from '../components/CustomToolLayout';
@@ -8,7 +8,7 @@ import Barcode from 'react-barcode';
 import * as OTPAuth from 'otpauth';
 import { getBackendUrl } from '../config';
 import { openExternalLink } from '../utils/openLink';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Wifi } from 'lucide-react';
 import { BleClient } from '@capacitor-community/bluetooth-le';
 import { CapacitorNfc } from '@capgo/capacitor-nfc';
 import { Capacitor } from '@capacitor/core';
@@ -1014,7 +1014,7 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
       }
     } catch (e: any) {
       console.error('BLE INIT FAIL', e);
-      throw new Error(e.message || 'Bluetooth Hardware Busy');
+      throw new Error('Bluetooth Hardware Busy');
     }
   };
 

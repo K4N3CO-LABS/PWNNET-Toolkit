@@ -55,12 +55,13 @@ export function DirScannerTool({ tool, onClose }: { tool: ToolDef; onClose: () =
       const backendUrl = getBackendUrl();
       const qs = new URLSearchParams({ target: url }).toString();
       const res = await fetch(`${backendUrl}/api/net/dirscan?${qs}`);
-      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      if (!res.ok) throw new Error(`Gateway Error: ${res.status}`);
       const data = await res.json();
+      if (data.error) throw new Error(data.error);
       setResults(data.results || []);
     } catch (e: any) {
       console.error(e);
-      alert(`Connection Error: ${e.message}. Ensure your backend is running at ${getBackendUrl()}`);
+      setResults([{ path: 'ERROR', status: 500, url: `CONNECTION FAILED: ${e.message}` }]);
     } finally {
       setStatus('finished');
     }
@@ -140,14 +141,17 @@ export function SpiderTool({ tool, onClose }: { tool: ToolDef; onClose: () => vo
       const backendUrl = getBackendUrl();
       const qs = new URLSearchParams({ target: url }).toString();
       const res = await fetch(`${backendUrl}/api/net/spider?${qs}`);
+      if (!res.ok) throw new Error(`Gateway Error: ${res.status}`);
       const data = await res.json();
+      if (data.error) throw new Error(data.error);
       if (data.links) {
         setResults(data.links);
       } else if (data.result) {
         setResults(data.result.split('\n').filter((l: string) => l.trim()));
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setResults([`CRAWL ERROR: ${e.message}`]);
     } finally {
       setStatus('finished');
     }
