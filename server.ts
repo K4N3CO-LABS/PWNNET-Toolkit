@@ -6,7 +6,7 @@ import net from 'net';
 import dns from 'dns';
 import { promisify } from 'util';
 import cors from 'cors';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const resolveMx = promisify(dns.resolveMx);
 const resolveTxt = promisify(dns.resolveTxt);
@@ -1615,22 +1615,30 @@ let genAI: any = null;
 
 function getAiClient() {
   if (genAI) return genAI;
-  const key = process.env.GEMINI_API_KEY;
+  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (key) {
-    genAI = new GoogleGenAI(key);
+    try {
+      genAI = new GoogleGenerativeAI(key);
+      console.log('[AI] Gemini Client Initialized successfully.');
+    } catch (e) {
+      console.error('[AI] Gemini Init Error:', e);
+    }
+  } else {
+    console.warn('[AI] MISSING API KEY: Please set GEMINI_API_KEY in Render environment.');
   }
   return genAI;
 }
 
 // AI Diagnostic endpoint
 app.get('/api/net/ai_status', async (req, res) => {
-  const hasGemini = !!process.env.GEMINI_API_KEY;
+  const hasGemini = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
   const hasOpenAI = !!process.env.OPENAI_API_KEY;
 
   res.json({
     gemini: hasGemini ? 'READY' : 'MISSING_KEY',
     openai: hasOpenAI ? 'READY' : 'MISSING_KEY',
-    simulationMode: (!hasGemini && !hasOpenAI) ? 'ON' : 'OFF'
+    simulationMode: (!hasGemini && !hasOpenAI) ? 'ON' : 'OFF',
+    instructions: "Ensure keys are added to 'Environment Variables' in Render Dashboard."
   });
 });
 
@@ -1665,12 +1673,10 @@ async function generateAIResponse(prompt: string) {
     try {
       const model = client.getGenerativeModel({
         model: 'gemini-1.5-flash',
-        safetySettings: [
-          { category: 'HATE_SPEECH', threshold: 'BLOCK_NONE' },
-          { category: 'DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-          { category: 'HARASSMENT', threshold: 'BLOCK_NONE' },
-          { category: 'SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' }
-        ]
+        generationConfig: {
+           maxOutputTokens: 1000,
+           temperature: 0.7
+        }
       });
       const result = await model.generateContent(prompt);
       const response = await result.response;
@@ -1680,17 +1686,22 @@ async function generateAIResponse(prompt: string) {
     }
   }
 
-  // 3. Simulation Fallback (No keys found)
+  const missingKey = (!process.env.OPENAI_API_KEY && !process.env.GEMINI_API_KEY)
+    ? "OPENAI_API_KEY and GEMINI_API_KEY"
+    : !process.env.OPENAI_API_KEY ? "OPENAI_API_KEY" : "GEMINI_API_KEY";
+
   return `[PWNNET SIMULATION MODE]
 
-  No AI API keys detected in your environment.
+  CRITICAL: The backend is missing your AI keys (${missingKey}).
 
-  RESEARCH DATA:
-  Based on the context provided, this is a simulated analysis of "${prompt.substring(0, 50)}...".
+  TO FIX:
+  1. Open dashboard.render.com
+  2. Go to 'Environment' tab
+  3. Add 'GEMINI_API_KEY' with your value from aistudio.google.com
+  4. Save and Redeploy.
 
-  To see live AI results:
-  1. Add OPENAI_API_KEY or GEMINI_API_KEY to your Render Environment or .env file.
-  2. Restart the backend node.`;
+  RESEARCH DATA (Simulated):
+  ${prompt.substring(0, 100)}...`;
 }
 
 // AI Vulnerability Analyzer endpoint

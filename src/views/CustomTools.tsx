@@ -1125,8 +1125,8 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
         mData = [0x42, 0x09, 0x81, 0x02];
       }
 
+      // NO NAME - many drivers crash if name + mData > 26 bytes
       await BleClient.startAdvertising({
-        name: 'PWN//NET',
         services: [],
         manufacturerId: mId,
         manufacturerData: mData
@@ -1135,7 +1135,7 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
       setMessage(`SPOOF LIVE: ${type.toUpperCase()}`);
     } catch (error: any) {
       console.error('BLE SPAM FAIL', error);
-      setMessage('Driver Conflict. Toggle BT.');
+      setMessage('Driver Error. Toggle BT.');
       setSpamming(false);
     }
   };
