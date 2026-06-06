@@ -1616,36 +1616,42 @@ let genAI: any = null;
 function getAiClient() {
   if (genAI) return genAI;
 
-  // Try multiple common key names to be robust
-  const key = process.env.GEMINI_API_KEY ||
-              process.env.GOOGLE_API_KEY ||
-              process.env.GEMINI_KEY ||
-              process.env.API_KEY;
+  // Try multiple common key names and TRIM them to prevent hidden spaces
+  const rawKey = process.env.GEMINI_API_KEY ||
+                 process.env.GOOGLE_API_KEY ||
+                 process.env.GEMINI_KEY ||
+                 process.env.API_KEY;
 
-  if (key && key.length > 10) {
+  const key = rawKey ? rawKey.trim() : null;
+
+  if (key && key.length > 5) {
     try {
       genAI = new GoogleGenerativeAI(key);
-      console.log(`[AI] Gemini Client Initialized (Key: ${key.substring(0, 4)}***${key.substring(key.length - 4)})`);
+      console.log(`[AI] Gemini Client Initialized (Key: ${key.substring(0, 4)}***)`);
     } catch (e) {
       console.error('[AI] Gemini Init Error:', e);
     }
   } else {
-    console.warn('[AI] MISSING API KEY: Please set GEMINI_API_KEY in Render dashboard.');
-    console.log('[AI] Available Env Vars:', Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('API')));
+    console.warn('[AI] MISSING API KEY: GEMINI_API_KEY is not set in Render.');
   }
   return genAI;
 }
 
 // AI Diagnostic endpoint
 app.get('/api/net/ai_status', async (req, res) => {
-  const hasGemini = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
-  const hasOpenAI = !!process.env.OPENAI_API_KEY;
+  const key = (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '').trim();
+  const hasGemini = key.length > 5;
+  const hasOpenAI = !!(process.env.OPENAI_API_KEY || '').trim();
 
   res.json({
     gemini: hasGemini ? 'READY' : 'MISSING_KEY',
     openai: hasOpenAI ? 'READY' : 'MISSING_KEY',
     simulationMode: (!hasGemini && !hasOpenAI) ? 'ON' : 'OFF',
-    instructions: "Ensure keys are added to 'Environment Variables' in Render Dashboard."
+    debug: {
+        keyDetected: hasGemini,
+        keyLength: key.length,
+        envKeys: Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('API'))
+    }
   });
 });
 
@@ -1658,7 +1664,7 @@ async function generateAIResponse(prompt: string) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY.trim()}`
         },
         body: JSON.stringify({
           model: 'gpt-4o-mini',
@@ -1679,17 +1685,14 @@ async function generateAIResponse(prompt: string) {
   if (client) {
     try {
       const model = client.getGenerativeModel({
-        model: 'gemini-1.5-flash',
-        generationConfig: {
-           maxOutputTokens: 1000,
-           temperature: 0.7
-        }
+        model: 'gemini-1.5-flash'
       });
       const result = await model.generateContent(prompt);
       const response = await result.response;
       return response.text();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Gemini Error:', e);
+      return `[GEMINI ERROR] ${e.message || 'Check your API key and service status.'}`;
     }
   }
 

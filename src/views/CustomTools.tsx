@@ -1127,15 +1127,16 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
 
       // NO NAME - many drivers crash if name + mData > 26 bytes
       try {
-        await BleClient.startAdvertising({
-          services: [],
+        const payload = {
           manufacturerId: mId,
-          manufacturerData: mData
-        });
+          manufacturerData: Array.from(new Uint8Array(mData)) // Explicit byte array for plugin
+        };
+
+        await BleClient.startAdvertising(payload);
         setMessage(`SPOOFING ACTIVE: ${type.toUpperCase()}`);
       } catch (inner: any) {
         console.error('BLE ADVERTISE NATIVE ERROR', inner);
-        setMessage(`Driver Error: ${inner.message || 'Busy'}`);
+        setMessage(`Driver Error: ${inner.message || 'Radio Busy'}`);
         setSpamming(false);
       }
     } catch (error: any) {
