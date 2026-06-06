@@ -1683,17 +1683,26 @@ async function generateAIResponse(prompt: string) {
   // 2. Try Gemini if configured
   const client = getAiClient();
   if (client) {
-    try {
-      const model = client.getGenerativeModel({
-        model: 'gemini-1.5-flash'
-      });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
-    } catch (e: any) {
-      console.error('Gemini Error:', e);
-      return `[GEMINI ERROR] ${e.message || 'Check your API key and service status.'}`;
+    // We try gemini-pro first as it is the most widely available stable version
+    const modelsToTry = ['gemini-pro', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro'];
+    let lastError = '';
+
+    for (const modelName of modelsToTry) {
+      try {
+        const model = client.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        return response.text();
+      } catch (e: any) {
+        lastError = e.message;
+        if (e.message.includes('404') || e.message.includes('not found')) {
+          console.log(`[AI] Model ${modelName} not available, trying next...`);
+          continue;
+        }
+        break;
+      }
     }
+    return `[GEMINI ERROR] ${lastError || 'Model access restricted or API key invalid.'}`;
   }
 
   const missingKey = (!process.env.OPENAI_API_KEY && !process.env.GEMINI_API_KEY)

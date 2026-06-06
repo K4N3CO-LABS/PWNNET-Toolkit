@@ -342,21 +342,31 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
         addOutput('system', `Attempting to initialize native ${binary} binary...`);
 
         try {
-          // We assume the user has the binary installed or we try to call it directly
-          // For nmap, we might use a common path or just the command name
+          // Attempt to find binary in common paths or rely on user environment
           const cmd = binary === 'nmap' ? `nmap -F ${resolvedTarget}` : `gobuster dir -u ${resolvedTarget} -w /sdcard/wordlist.txt`;
 
           const result = await NativeShell.execute({ command: cmd });
           if (result.output) {
-            result.output.split('\n').forEach(line => addOutput('info', line));
+            result.output.split('\n').forEach(line => {
+              if (line.trim()) addOutput('info', line);
+            });
           }
+
+          if ((result as any).error) {
+             addOutput('error', (result as any).error);
+          }
+
           if (result.exitCode === 0) {
             addOutput('success', `Native ${binary} execution completed.`);
+          } else if (result.exitCode === 127) {
+            addOutput('error', `CRITICAL: Binary '${binary}' not found on device (Code 127).`);
+            addOutput('system', 'ADVICE: Install Termux from F-Droid, then run: pkg install nmap gobuster');
           } else {
             addOutput('error', `Binary exited with code ${result.exitCode}`);
           }
         } catch (e: any) {
-          addOutput('error', `Native execution failed: ${e.message}. Ensure binary is present in system path.`);
+          addOutput('error', `Native execution failed: ${e.message}`);
+          addOutput('system', 'Note: Native tools require external binaries. If not found, use the standard cloud-hosted versions.');
         }
         setIsRunning(false);
         return;

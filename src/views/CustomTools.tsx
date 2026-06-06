@@ -1136,7 +1136,8 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
         setMessage(`SPOOFING ACTIVE: ${type.toUpperCase()}`);
       } catch (inner: any) {
         console.error('BLE ADVERTISE NATIVE ERROR', inner);
-        setMessage(`Driver Error: ${inner.message || 'Radio Busy'}`);
+        // On some phones, this fails if Bluetooth is already "busy" with another process
+        setMessage(`DRIVER ERROR: ${inner.message || 'Radio Locked'}. Try toggling phone Bluetooth off/on.`);
         setSpamming(false);
       }
     } catch (error: any) {
