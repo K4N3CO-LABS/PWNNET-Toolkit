@@ -2,7 +2,7 @@
 
 [![homescreen.png](https://i.postimg.cc/BZgFgfkK/homescreen.png)](https://postimg.cc/Jtstrv1r)
 
-**PWN//NET** is an **ethical bug-hunting** and **networking toolkit** designed for security researchers, penetration testers, and enthusiasts. From identifying **critical vulnerabilities** to uncovering hidden attack surfaces, **PWN//NET** equips you with **45+ real-world scanners and diagnostic tools** to find exploitable **bugs**, **exposed secrets**, and **misconfigurations** — all in a clean, responsive interface.
+**PWN//NET** is an **ethical bug-hunting** and **networking toolkit** designed for **security researchers, penetration testers, and enthusiasts**. From identifying **critical vulnerabilities** to uncovering hidden attack surfaces, **PWN//NET** equips you with **45+ real-world scanners and diagnostic tools** to find exploitable **bugs**, **exposed secrets**, and **misconfigurations** — all in a clean, responsive interface.
 
 Whether you're a **beginner** learning the ropes of **ethical hacking** or a **seasoned professional** hunting for **bounties** on production targets, **PWN//NET** provides the **advanced reconnaissance** capabilities you need to succeed.
 
