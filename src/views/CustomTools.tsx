@@ -1003,6 +1003,13 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
       }
       // On Android we might need to check and request enable
       if (Capacitor.getPlatform() === 'android') {
+        // Request permissions first on modern Android
+        try {
+            await BleClient.requestPermissions();
+        } catch (e) {
+            console.warn('Permission request failed or already granted');
+        }
+
         const enabled = await BleClient.isEnabled();
         if (!enabled) {
           try {
@@ -1015,7 +1022,7 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
       }
     } catch (e: any) {
       console.error('BLE INIT FAIL', e);
-      throw new Error('Bluetooth Hardware Busy');
+      throw new Error(e.message || 'Bluetooth Hardware Busy');
     }
   };
 
@@ -1256,6 +1263,18 @@ function NfcTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
     (document.activeElement as HTMLElement)?.blur();
     try {
       if (Capacitor.isNativePlatform()) {
+        // Ensure permissions
+        try {
+           const status = await CapacitorNfc.checkPermissions();
+           if (status.nfc !== 'granted') {
+              const req = await CapacitorNfc.requestPermissions();
+              if (req.nfc !== 'granted') {
+                 setMessage('NFC Permission Denied.');
+                 return;
+              }
+           }
+        } catch(e) {}
+
         setScanning(true);
         setMessage('Ready. Bring NFC tag near the device antenna...');
 
@@ -1362,16 +1381,17 @@ let cachedRecentCves: any[] | null = null;
 let cveFetchPromise: Promise<any> | null = null;
 
 const prefetchCves = () => {
+  if (cachedRecentCves) return Promise.resolve(cachedRecentCves);
   if (!cveFetchPromise) {
     const backendUrl = getBackendUrl();
     cveFetchPromise = fetch(`${backendUrl}/api/net/cve/recent`)
       .then(r => r.json())
       .then(d => {
          let data = [];
-         if (Array.isArray(d)) {
-            data = d.slice(0, 15);
-         } else if (d && d.vulnerabilities && Array.isArray(d.vulnerabilities)) {
+         if (d && d.vulnerabilities && Array.isArray(d.vulnerabilities)) {
             data = d.vulnerabilities;
+         } else if (Array.isArray(d)) {
+            data = d.slice(0, 15);
          }
          cachedRecentCves = data;
          return data;
@@ -1390,13 +1410,18 @@ setTimeout(prefetchCves, 1000);
 export function CveTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
   const { value: cveId, setValue: setCveId, handleKeyDown, saveToHistory } = useInputHistory('');
   const [data, setData] = useState<any>(null);
-  const [recentCves, setRecentCves] = useState<any[]>([]);
+  const [recentCves, setRecentCves] = useState<any[]>(cachedRecentCves || []);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
-  const [startIndex, setStartIndex] = useState(0);
+  const [startIndex, setStartIndex] = useState(cachedRecentCves?.length || 0);
 
   const fetchRecent = async (index = 0) => {
+    if (index === 0 && cachedRecentCves && cachedRecentCves.length > 0) {
+       // Already have initial data
+       return;
+    }
+
     if (index === 0) setLoading(true);
     else setLoadingMore(true);
 
@@ -1408,12 +1433,18 @@ export function CveTool({ tool, onClose }: { tool: ToolDef, onClose: () => void 
       const json = await res.json();
 
       if (json.vulnerabilities) {
-        if (index === 0) setRecentCves(json.vulnerabilities);
-        else setRecentCves(prev => [...prev, ...json.vulnerabilities]);
+        if (index === 0) {
+           setRecentCves(json.vulnerabilities);
+           cachedRecentCves = json.vulnerabilities;
+        } else {
+           setRecentCves(prev => [...prev, ...json.vulnerabilities]);
+        }
         setStartIndex(index + json.vulnerabilities.length);
       }
     } catch (e: any) {
-      setError('Could not populate database. NVD API might be rate-limited.');
+      if (recentCves.length === 0) {
+        setError('Could not populate database. NVD API might be rate-limited.');
+      }
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -1421,7 +1452,16 @@ export function CveTool({ tool, onClose }: { tool: ToolDef, onClose: () => void 
   };
 
   useEffect(() => {
-    fetchRecent(0);
+    if (recentCves.length === 0) {
+       prefetchCves().then(data => {
+         if (data && data.length > 0) {
+           setRecentCves(data);
+           setStartIndex(data.length);
+         } else {
+           fetchRecent(0);
+         }
+       });
+    }
   }, []);
 
   const searchCve = async (idToSearch?: string) => {
@@ -2025,81 +2065,24 @@ export function AiTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
 }
 
 export function LlmJailbreakerTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
-  const { value: target, setValue: setTarget, handleKeyDown, saveToHistory } = useInputHistory('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string>('');
-
-  const scan = async () => {
-    if(!target) return;
-    setLoading(true);
-    setResult('Generating advanced context-aware prompt injection payload...');
-    try {
-      const baseUrl = getBackendUrl();
-      const res = await fetch(`${baseUrl}/api/net/llm_jailbreak`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target: target })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setResult(data.result || 'No payload generated.');
-      } else {
-        setResult(`Error: ${data.error || 'Request failed.'}`);
-      }
-    } catch(e: any) {
-      setResult(`Connection Error: ${e.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const tabs = ["ChatGPT", "Claude", "Gemini", "Copilot", "Customer Service Bot"];
-
   return (
     <CustomToolLayout tool={tool} onClose={onClose}>
-      <div className="flex flex-col h-full space-y-4">
-        <label className="text-gray-500 text-[10px] font-bold uppercase tracking-widest block">LLM JAILBREAKER</label>
-
-        <div className="flex flex-wrap gap-2">
-          {tabs.map(t => (
-            <button
-              key={t}
-              onClick={() => setTarget(t)}
-              className="bg-[#050505] border border-neon-green/20 hover:border-neon-green/80 text-neon-green/80 text-[10px] font-mono px-3 py-1 rounded transition-colors"
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <ClearableInput
-            autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false}
-            type="text"
-            value={target}
-            onChange={e => setTarget(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="bg-[#050505] border border-neon-green/20 focus-within:border-neon-green rounded-xl text-xs"
-            placeholder="target LLM system or persona (e.g. Finance Bot)"
-            onClear={() => setTarget('')}
-          />
+      <div className="flex flex-col items-center justify-center h-full p-10 text-center">
+        <div className="bg-neon-green/10 border border-neon-green/30 p-8 rounded-2xl max-w-md">
+          <p className="text-gray-200 font-mono text-sm leading-relaxed">
+            A separate standalone app has been built for this specific task. You can download it here:
+          </p>
           <button
-            onClick={scan}
-            disabled={loading || !target}
-            className="bg-neon-green/10 text-neon-green border border-neon-green/30 hover:bg-neon-green hover:text-black transition-all px-6 py-4 rounded-xl font-bold uppercase tracking-widest text-xs disabled:opacity-50 min-w-[200px]"
+            onClick={() => openExternalLink('https://github.com/K4N3CO-LABS/JailBreak-Ai/releases/tag/v1.0.1')}
+            className="mt-6 block w-full bg-neon-green text-black px-6 py-4 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-white transition-all shadow-[0_0_20px_rgba(57,255,20,0.2)]"
           >
-            {loading ? 'GENERATING PAYLOAD...' : 'GENERATE PAYLOAD'}
+            Download Module
           </button>
-        </div>
-
-        <div className="flex-1 border border-neon-green/20 bg-[#050505] rounded-xl p-4 overflow-auto scrollbar-thin scrollbar-thumb-neon-green/20">
-          <div className="flex justify-between items-center mb-2">
-             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Injection Payload</span>
-             {result && <CopyButton text={result} />}
+          <div className="mt-6 pt-6 border-t border-white/10">
+            <p className="text-gray-500 text-[9px] uppercase tracking-tighter break-all">
+              https://github.com/K4N3CO-LABS/JailBreak-Ai/releases/tag/v1.0.1
+            </p>
           </div>
-          <pre className="text-xs font-mono text-neon-green/80 whitespace-pre-wrap">
-            {result || 'Waiting for target to generate payload...'}
-          </pre>
         </div>
       </div>
     </CustomToolLayout>

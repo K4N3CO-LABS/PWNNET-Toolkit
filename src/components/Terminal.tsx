@@ -283,7 +283,7 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
     setIsRunning(true);
     let resolvedTarget = input.trim();
     if (!resolvedTarget.startsWith('http://') && !resolvedTarget.startsWith('https://') && 
-        (activeToolId === 'http' || activeToolId === 'spider' || activeToolId === 'admin_finder' || activeToolId === 'admin-finder' || activeToolId === 'js_scan' || activeToolId === 'cors_scan')) {
+        (activeToolId === 'http' || activeToolId === 'spider' || activeToolId === 'admin_finder' || activeToolId === 'js_scan' || activeToolId === 'cors_scan')) {
       resolvedTarget = 'https://' + resolvedTarget;
     }
 
@@ -291,7 +291,7 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
 
-    const domainRequiredTools = ['admin_finder', 'admin-finder', 'blacklist', 'certs', 'dns', 'geo', 'http', 'ip_host', 'mail', 'ping', 'port_scan', 'shodan', 'spider', 'vt', 'whois', 'traceroute', 'net_scan', 'subdomains', 'js_scan', 'cors_scan'];
+    const domainRequiredTools = ['admin_finder', 'blacklist', 'certs', 'dns', 'geo', 'http', 'ip_host', 'mail', 'ping', 'port_scan', 'shodan', 'spider', 'vt', 'whois', 'traceroute', 'net_scan', 'subdomains', 'js_scan', 'cors_scan', 'sub'];
     
     if (domainRequiredTools.includes(activeToolId) && !ipDomainRegex.test(resolvedTarget)) {
       addOutput('error', 'Invalid input format. Please enter a valid domain, IP address, or URL.');
@@ -373,7 +373,7 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
       }
 
       // --- ADMIN FINDER ---
-      if (activeToolId === 'admin_finder' || activeToolId === 'admin-finder') {
+      if (activeToolId === 'admin_finder') {
         addOutput('system', `Scanning admin panels on ${resolvedTarget} via backend...`);
         const data = await runBackendTool('adminfinder', { target: resolvedTarget });
         const cleanTarget = resolvedTarget.replace(/\/+$/, '');
@@ -397,28 +397,27 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
 
         if (cmd === 'help') {
           addOutput('info', `Available commands:
-  nmap <target>    - Port scan
-  ping <target>    - Ping target
-  whois <domain>   - WHOIS lookup
-  dns <domain>     - DNS records
+  nmap <target>    - Fast port scan (Cloud)
+  ping <target>    - TCP latency test
+  whois <domain>   - WHOIS registration info
+  dns <domain>     - DNS record enumeration
   admin <url>      - Admin panel finder
-  http <url>       - HTTP headers
-  crawl <url>      - Web crawler
-  help               - This help
-  clear              - Clear output
-  echo <text>      - Print text`);
+  http <url>       - View HTTP response headers
+  crawl <url>      - Extract links from webpage
+  sub <domain>     - Enumeration subdomains
+  clear              - Clear terminal screen
+  echo <text>      - Print text to screen
+  help               - Show this menu`);
         }
         else if (cmd === 'clear') { setOutput([]); }
         else if (cmd === 'echo') { addOutput('info', args.slice(1).join(' ')); }
         else if (cmd === 'nmap') {
           const host = args[1];
           if (!host) { addOutput('error', 'Usage: nmap <target>'); setIsRunning(false); return; }
-          addOutput('system', `Scanning ${host} via backend...`);
+          addOutput('system', `Scanning ${host} via cloud-nmap...`);
           try {
-            const data = await runBackendTool('portscan', { target: host });
-            data.results.forEach((r: any) => {
-              addOutput(r.isOpen ? 'success' : 'info', `Port ${r.port} (${r.service}): ${r.isOpen ? 'OPEN' : 'CLOSED'}`);
-            });
+            const data = await runBackendTool('nmap', { target: host });
+            addOutput('info', data.result || 'No output from scan');
           } catch (e: any) {
             addOutput('error', 'Scan failed: ' + e.message);
           }
@@ -429,7 +428,7 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
           addOutput('system', `Pinging ${host} via backend TCP...`);
           try {
             const data = await runBackendTool('ping', { target: host });
-            addOutput('info', `Reply from ${data.ip} via port ${data.port}: time=${data.time}ms`);
+            addOutput('success', `Reply from ${data.ip} via port ${data.port}: time=${data.time}ms`);
           } catch (e: any) {
             addOutput('error', 'Ping failed: ' + e.message);
           }
@@ -472,6 +471,22 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
             addOutput('error', 'Scan failed: ' + e.message);
           }
         }
+        else if (cmd === 'sub') {
+          const host = args[1];
+          if (!host) { addOutput('error', 'Usage: sub <domain>'); setIsRunning(false); return; }
+          addOutput('system', `Subdomain enum for ${host}...`);
+          try {
+            const data = await runBackendTool('subdomains', { target: host });
+            if (data.result && data.result.length > 0) {
+              data.result.forEach((s: string) => addOutput('info', s));
+              addOutput('success', `Found ${data.result.length} subdomains.`);
+            } else {
+              addOutput('info', 'No subdomains discovered.');
+            }
+          } catch (e: any) {
+            addOutput('error', 'Enum failed: ' + e.message);
+          }
+        }
         else if (cmd === 'http') {
           const url = args[1];
           if (!url) { addOutput('error', 'Usage: http <url>'); setIsRunning(false); return; }
@@ -510,33 +525,7 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
       }
 
       // --- REGULAR TOOLS ---
-      if (activeToolId === 'nmap_native') {
-        addOutput('system', `Executing Nmap fast scan for: ${resolvedTarget}...`);
-        try {
-          const res = await runBackendTool('nmap', { target: resolvedTarget });
-          addOutput('info', res.result || 'No output from nmap');
-          addOutput('success', 'Nmap scan completed successfully.');
-        } catch (e: any) {
-          addOutput('error', `Nmap execution failed: ${e.message}`);
-        }
-      }
-      else if (activeToolId === 'gobuster_native') {
-        addOutput('system', `Executing directory fuzzing (Gobuster engine) for: ${resolvedTarget}...`);
-        try {
-          const res = await runBackendTool('dirscan', { target: resolvedTarget });
-          if (res.results && res.results.length > 0) {
-            res.results.forEach((r: any) => {
-              addOutput('success', `[${r.status}] FOUND: ${r.path}`);
-            });
-            addOutput('system', `Scan complete. Found ${res.results.length} paths.`);
-          } else {
-            addOutput('info', 'No common paths discovered.');
-          }
-        } catch (e: any) {
-          addOutput('error', `Directory fuzzer failed: ${e.message}`);
-        }
-      }
-      else if (activeToolId === 'llm_jailbreak') {
+      if (activeToolId === 'llm_jailbreak') {
         addOutput('system', `Generating custom LLM jailbreak payload targeting: ${resolvedTarget}...`);
         try {
           const backendUrl = getBackendUrl();
