@@ -1425,10 +1425,10 @@ export function CveTool({ tool, onClose }: { tool: ToolDef, onClose: () => void 
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
   const [startIndex, setStartIndex] = useState(cachedRecentCves?.length || 0);
+  const [showDiag, setShowDiag] = useState(false);
 
   const fetchRecent = async (index = 0) => {
     if (index === 0 && cachedRecentCves && cachedRecentCves.length > 0) {
-       // Already have initial data
        return;
     }
 
@@ -1439,7 +1439,10 @@ export function CveTool({ tool, onClose }: { tool: ToolDef, onClose: () => void 
     try {
       const backendUrl = getBackendUrl();
       const res = await fetch(`${backendUrl}/api/net/cve/recent?startIndex=${index}`);
-      if (!res.ok) throw new Error('Failed to fetch recent CVEs');
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.details || errJson.error || `Server error ${res.status}`);
+      }
       const json = await res.json();
 
       if (json.vulnerabilities) {
@@ -1453,7 +1456,7 @@ export function CveTool({ tool, onClose }: { tool: ToolDef, onClose: () => void 
       }
     } catch (e: any) {
       if (recentCves.length === 0) {
-        setError('Could not populate database. NVD API might be rate-limited.');
+        setError(`DATABASE SYNC FAIL: ${e.message}. Ensure backend is live at ${getBackendUrl()}`);
       }
     } finally {
       setLoading(false);
@@ -1485,7 +1488,10 @@ export function CveTool({ tool, onClose }: { tool: ToolDef, onClose: () => void 
     try {
       const backendUrl = getBackendUrl();
       const res = await fetch(`${backendUrl}/api/net/cve/search?id=${encodeURIComponent(targetId)}`);
-      if (!res.ok) throw new Error('CVE not found or API error');
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `CVE not found or API error (${res.status})`);
+      }
       const json = await res.json();
       if (!json || !json.data) throw new Error('CVE not found');
       setData({ fallback: json.fallback, data: json.data });
@@ -1499,9 +1505,24 @@ export function CveTool({ tool, onClose }: { tool: ToolDef, onClose: () => void 
   return (
     <CustomToolLayout tool={tool} onClose={onClose}>
       <div className="flex flex-col h-full space-y-4">
-        <label className="text-gray-500 text-[10px] font-bold uppercase tracking-widest block">
-          {recentCves.length > 0 && !data ? 'RECENT CVEs & SEARCH' : 'CVE DATABASE SEARCH'}
-        </label>
+        <div className="flex justify-between items-center">
+          <label className="text-gray-500 text-[10px] font-bold uppercase tracking-widest block">
+            {recentCves.length > 0 && !data ? 'RECENT CVEs & SEARCH' : 'CVE DATABASE SEARCH'}
+          </label>
+          <button onClick={() => setShowDiag(!showDiag)} className="text-[9px] text-gray-600 hover:text-neon-green transition-colors uppercase font-mono">
+            [Backend Info]
+          </button>
+        </div>
+
+        {showDiag && (
+           <div className="p-3 border border-white/10 bg-black/50 rounded-lg text-[9px] font-mono text-gray-500 break-all">
+              ENDPOINT: {getBackendUrl()}/api/net/cve/recent<br/>
+              PLATFORM: {Capacitor.getPlatform()}<br/>
+              NATIVE: {Capacitor.isNativePlatform() ? 'YES' : 'NO'}<br/>
+              CACHE: {recentCves.length} items
+           </div>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-3 p-1">
           <ClearableInput
             autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false}
@@ -1522,8 +1543,13 @@ export function CveTool({ tool, onClose }: { tool: ToolDef, onClose: () => void 
         </div>
 
         {error && (
-          <div className="p-4 border border-red-500/30 text-red-500 bg-red-500/10 rounded-xl text-xs">
-            {error}
+          <div className="p-4 border border-red-500/30 text-red-500 bg-red-500/10 rounded-xl text-xs flex flex-col gap-2">
+            <p>{error}</p>
+            {recentCves.length === 0 && (
+              <button onClick={() => fetchRecent(0)} className="underline text-left font-bold hover:text-white transition-colors">
+                RETRY CONNECTION
+              </button>
+            )}
           </div>
         )}
 
@@ -1532,16 +1558,19 @@ export function CveTool({ tool, onClose }: { tool: ToolDef, onClose: () => void 
              <div className="flex-1 overflow-auto p-4 scrollbar-thin scrollbar-thumb-neon-green/20">
                <h3 className="text-xs font-bold text-gray-500 tracking-widest uppercase mb-4">Most Recent Vulnerabilities</h3>
                {loading && startIndex === 0 ? (
-                 <div className="flex items-center justify-center py-10 text-neon-green text-xs animate-pulse">Synchronizing with Global Database...</div>
+                 <div className="flex flex-col items-center justify-center py-10 gap-3">
+                    <div className="w-6 h-6 border-2 border-neon-green/20 border-t-neon-green rounded-full animate-spin" />
+                    <div className="text-neon-green text-[10px] animate-pulse uppercase font-mono tracking-widest">Synchronizing Global Database...</div>
+                 </div>
                ) : (
                  <div className="space-y-4">
                     {recentCves.map((cve, i) => (
-                      <div key={i} className="border-b border-neon-green/10 pb-4 last:border-0 cursor-pointer hover:bg-neon-green/5 p-2 rounded transition-all" onClick={() => searchCve(cve.id)}>
+                      <div key={i} className="border-b border-neon-green/10 pb-4 last:border-0 cursor-pointer hover:bg-neon-green/5 p-2 rounded transition-all group" onClick={() => searchCve(cve.id)}>
                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-neon-green font-bold text-xs">{cve.id}</span>
-                            {cve.cvss && <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded border border-red-500/30">CVSS: {cve.cvss}</span>}
+                            <span className="text-neon-green font-bold text-xs group-hover:text-white transition-colors">{cve.id}</span>
+                            {cve.cvss && <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded border border-red-500/30">CVSS: {cve.cvss}</span>}
                          </div>
-                         <p className="text-gray-400 text-[10px] line-clamp-2">{cve.summary}</p>
+                         <p className="text-gray-400 text-[10px] line-clamp-2 leading-relaxed">{cve.summary}</p>
                       </div>
                     ))}
 

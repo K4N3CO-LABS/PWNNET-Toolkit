@@ -1477,28 +1477,28 @@ app.get('/api/net/wpscan', async (req, res) => {
     const resultsPerPage = 20;
 
     const fetchNVD = async () => {
-       const controller = new AbortController();
-       const t = setTimeout(() => controller.abort(), 10000); // Increased timeout
-
        const end = new Date();
-       const start = new Date(end.getTime() - 120 * 24 * 60 * 60 * 1000); // 120 days
+       const start = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days (Safer range)
 
-       // NVD 2.0 expects YYYY-MM-DDTHH:mm:ss.SSSZ
-       const fmtDate = (d: Date) => encodeURIComponent(d.toISOString());
+       const fmtDate = (d: Date) => d.toISOString().split('.')[0] + '.000'; // Format: YYYY-MM-DDTHH:mm:ss.000
 
-       const url = `https://services.nvd.nist.gov/rest/json/cves/2.0?pubStartDate=${fmtDate(start)}&pubEndDate=${fmtDate(end)}&startIndex=${startIndex}&resultsPerPage=${resultsPerPage}`;
+       const url = `https://services.nvd.nist.gov/rest/json/cves/2.0?pubStartDate=${encodeURIComponent(fmtDate(start))}&pubEndDate=${encodeURIComponent(fmtDate(end))}&startIndex=${startIndex}&resultsPerPage=${resultsPerPage}`;
        
-       const r = await fetch(url, { 
+       console.log(`[CVE] Querying NVD: ${url}`);
+       const controller = new AbortController();
+       const t = setTimeout(() => controller.abort(), 10000);
+
+       const r = await fetch(url, {
            signal: controller.signal,
            headers: {
-             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) PWNNET-Toolkit/1.0'
            }
        });
        clearTimeout(t);
        if (!r.ok) throw new Error(`NVD API returned ${r.status}`);
        const nvdData = await r.json();
        
-       if (nvdData?.vulnerabilities) {
+       if (nvdData?.vulnerabilities && nvdData.vulnerabilities.length > 0) {
            const formatted = nvdData.vulnerabilities.map((v: any) => {
                const cve = v.cve;
                const id = cve?.id || 'Unknown';
@@ -1508,14 +1508,16 @@ app.get('/api/net/wpscan', async (req, res) => {
                
                return { id, cvss, summary };
            });
+           console.log(`[CVE] NVD Success: ${formatted.length} items`);
            return { vulnerabilities: formatted, totalResults: nvdData.totalResults };
        }
        return null;
     };
 
     const fetchCircl = async () => {
+       console.log(`[CVE] Querying Circl.lu Fallback...`);
        const controller = new AbortController();
-       const t = setTimeout(() => controller.abort(), 12000); // Increased timeout for large response
+       const t = setTimeout(() => controller.abort(), 15000);
        const altRes = await fetch('https://cve.circl.lu/api/last/30', { signal: controller.signal });
        clearTimeout(t);
        if (!altRes.ok) throw new Error(`Circl.lu returned ${altRes.status}`);
@@ -1542,7 +1544,6 @@ app.get('/api/net/wpscan', async (req, res) => {
              }
           });
 
-          // Deduplicate and filter for CVE IDs
           const seen = new Set();
           const formatted = allVulnerabilities.filter(v => {
              if (seen.has(v.id)) return false;
@@ -1550,27 +1551,27 @@ app.get('/api/net/wpscan', async (req, res) => {
              return v.id !== 'Unknown' && v.id.startsWith('CVE-');
           });
 
+          console.log(`[CVE] Circl.lu Success: ${formatted.length} items extracted`);
           return { vulnerabilities: formatted.slice(startIndex, startIndex + resultsPerPage), totalResults: formatted.length, fallback: true };
        }
        return null;
     };
 
     try {
-       // Attempt NVD first, but it's very rate-limited
        try {
           const data = await fetchNVD();
           if (data) return res.json(data);
-       } catch (e) {
-          console.warn('NVD API Failed, falling back to Circl.lu...');
+       } catch (e: any) {
+          console.warn(`[CVE] NVD API Failed (${e.message}), falling back to Circl.lu...`);
        }
 
-       // Fallback to Circl.lu
        const circlData = await fetchCircl();
        if (circlData) return res.json(circlData);
 
-       throw new Error('All CVE sources failed');
+       throw new Error('All CVE sources failed or returned empty results.');
     } catch (e: any) {
-       res.status(500).json({ error: 'Could not retrieve CVE data', message: e.message });
+       console.error(`[CVE] CRITICAL FAIL: ${e.message}`);
+       res.status(500).json({ error: 'Could not retrieve CVE data', details: e.message });
     }
   });
 
@@ -1641,49 +1642,46 @@ app.get('/api/net/wpscan', async (req, res) => {
     if (!id || typeof id !== 'string') return res.status(400).json({ error: 'ID is required' });
     const cid = id.trim().toUpperCase();
 
-    const headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' };
+    const headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) PWNNET-Toolkit/1.0' };
 
     try {
-       // 1. Try MITRE (New API)
+       // 1. Try MITRE
        try {
-          const tc1 = new AbortController();
-          const t1 = setTimeout(() => tc1.abort(), 4000);
-          const res1 = await fetch(`https://cveawg.mitre.org/api/cve/${cid}`, { signal: tc1.signal, headers });
-          clearTimeout(t1);
+          const res1 = await fetch(`https://cveawg.mitre.org/api/cve/${cid}`, { headers });
           if (res1.ok) {
              const data = await res1.json();
-             if (data && data.cveMetadata) return res.json({ fallback: false, data });
+             if (data && data.cveMetadata) {
+                console.log(`[CVE] Found ${cid} on MITRE`);
+                return res.json({ fallback: false, data });
+             }
           }
        } catch(e) {}
 
-       // 2. Try NVD (REST 2.0)
+       // 2. Try NVD
        try {
-          const tc2 = new AbortController();
-          const t2 = setTimeout(() => tc2.abort(), 4000);
-          const res2 = await fetch(`https://services.nvd.nist.gov/rest/json/cve/2.0?cveId=${cid}`, { signal: tc2.signal, headers });
-          clearTimeout(t2);
+          const res2 = await fetch(`https://services.nvd.nist.gov/rest/json/cve/2.0?cveId=${cid}`, { headers });
           if (res2.ok) {
              const nvdData = await res2.json();
              if (nvdData?.vulnerabilities?.[0]) {
-                // Transform NVD format to something compatible or just return as is
+                console.log(`[CVE] Found ${cid} on NVD`);
                 return res.json({ fallback: false, data: nvdData.vulnerabilities[0].cve });
              }
           }
        } catch(e) {}
 
-       // 3. Try CIRCL (Fallback)
+       // 3. Try CIRCL
        try {
-          const tc3 = new AbortController();
-          const t3 = setTimeout(() => tc3.abort(), 4000);
-          const res3 = await fetch(`https://cve.circl.lu/api/cve/${cid}`, { signal: tc3.signal, headers });
-          clearTimeout(t3);
+          const res3 = await fetch(`https://cve.circl.lu/api/cve/${cid}`, { headers });
           if (res3.ok) {
              const data = await res3.json();
-             if (data && data.id) return res.json({ fallback: true, data });
+             if (data && data.id) {
+                console.log(`[CVE] Found ${cid} on Circl.lu`);
+                return res.json({ fallback: true, data });
+             }
           }
        } catch(e) {}
        
-       res.status(404).json({ error: 'CVE record not found across all sources.' });
+       res.status(404).json({ error: `CVE record ${cid} not found across all sources.` });
     } catch(e: any) {
        res.status(500).json({ error: 'Search failed', message: e.message });
     }
