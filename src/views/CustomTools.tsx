@@ -1119,26 +1119,36 @@ function BluetoothTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }
       await ensureBleEnabled();
 
       // Increased post-init cooldown for hardware stability
-      await new Promise(r => setTimeout(r, 1200));
+      await new Promise(r => setTimeout(r, 1500));
 
       let mId = 0x004c; // Apple
-      let mData: number[] = [0x07, 0x19, 0x07, 0x02, 0x20, 0x75, 0xaa, 0x30];
+      let mData: number[] = [0x07, 0x19, 0x07, 0x02, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00];
+      let services: string[] = [];
 
       if (type === 'google') {
         mId = 0x00e0;
         mData = [0x00, 0x01, 0x02, 0x03];
+        services = ["FE2C"]; // Google Fast Pair often uses this service
       } else if (type === 'samsung') {
         mId = 0x0075;
-        mData = [0x42, 0x09, 0x81, 0x02];
+        mData = [0x42, 0x09, 0x81, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00];
       }
 
-      // NO NAME - drivers crash if name + data exceeds limit
       try {
-        const payload = {
+        const payload: any = {
           manufacturerId: mId,
           manufacturerData: mData,
-          services: ["FE2C"] // dummy service for driver stability
         };
+
+        // Only add services if needed to keep packet size small
+        if (services.length > 0) {
+          payload.services = services;
+        }
+
+        // On some Android devices, providing an empty name helps stability
+        if (Capacitor.getPlatform() === 'android') {
+           payload.name = "";
+        }
 
         await BleClient.startAdvertising(payload);
         setMessage(`BROADCAST ACTIVE: ${type.toUpperCase()}`);

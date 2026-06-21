@@ -1478,13 +1478,13 @@ app.get('/api/net/wpscan', async (req, res) => {
 
     const fetchNVD = async () => {
        const controller = new AbortController();
-       const t = setTimeout(() => controller.abort(), 8000);
+       const t = setTimeout(() => controller.abort(), 10000); // Increased timeout
 
        const end = new Date();
-       const start = new Date(end.getTime() - 120 * 24 * 60 * 60 * 1000); // 120 days (Max NVD range)
+       const start = new Date(end.getTime() - 120 * 24 * 60 * 60 * 1000); // 120 days
 
-       // NVD 2.0 expects YYYY-MM-DDTHH:mm:ss.SSS - but it's often more stable without milliseconds
-       const fmtDate = (d: Date) => d.toISOString().split('.')[0];
+       // NVD 2.0 expects YYYY-MM-DDTHH:mm:ss.SSSZ
+       const fmtDate = (d: Date) => encodeURIComponent(d.toISOString());
 
        const url = `https://services.nvd.nist.gov/rest/json/cves/2.0?pubStartDate=${fmtDate(start)}&pubEndDate=${fmtDate(end)}&startIndex=${startIndex}&resultsPerPage=${resultsPerPage}`;
        
@@ -1515,16 +1515,41 @@ app.get('/api/net/wpscan', async (req, res) => {
 
     const fetchCircl = async () => {
        const controller = new AbortController();
-       const t = setTimeout(() => controller.abort(), 8000);
+       const t = setTimeout(() => controller.abort(), 12000); // Increased timeout for large response
        const altRes = await fetch('https://cve.circl.lu/api/last/30', { signal: controller.signal });
        clearTimeout(t);
+       if (!altRes.ok) throw new Error(`Circl.lu returned ${altRes.status}`);
        const altData = await altRes.json();
        if (Array.isArray(altData)) {
-          const formatted = altData.map((v: any) => ({
-             id: v.id,
-             cvss: v.cvss,
-             summary: v.summary
-          }));
+          let allVulnerabilities: any[] = [];
+          altData.forEach((item: any) => {
+             // Handle CSAF format (vulnerabilities array)
+             if (item.vulnerabilities && Array.isArray(item.vulnerabilities)) {
+                item.vulnerabilities.forEach((v: any) => {
+                   allVulnerabilities.push({
+                      id: v.cve || v.id || 'Unknown',
+                      summary: v.notes?.find((n:any)=>n.category==='summary' || n.category==='description')?.text || v.summary || 'No summary available',
+                      cvss: v.scores?.[0]?.cvss_v3?.baseScore || v.cvss || null
+                   });
+                });
+             } else if (item.id) {
+                // Legacy flat format
+                allVulnerabilities.push({
+                   id: item.id,
+                   summary: item.summary || 'No summary available',
+                   cvss: item.cvss || null
+                });
+             }
+          });
+
+          // Deduplicate and filter for CVE IDs
+          const seen = new Set();
+          const formatted = allVulnerabilities.filter(v => {
+             if (seen.has(v.id)) return false;
+             seen.add(v.id);
+             return v.id !== 'Unknown' && v.id.startsWith('CVE-');
+          });
+
           return { vulnerabilities: formatted.slice(startIndex, startIndex + resultsPerPage), totalResults: formatted.length, fallback: true };
        }
        return null;
