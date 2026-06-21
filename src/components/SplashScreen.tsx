@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Terminal, Shield, Network, Lock, Fingerprint, Code, Server, Zap } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export function SplashScreen({ onComplete }: { onComplete: () => void }) {
   const [currentText, setCurrentText] = useState("");
@@ -9,11 +8,23 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
   const [isSequenceFinished, setIsSequenceFinished] = useState(false);
 
   useEffect(() => {
-    // Stop glitching close to the end of splash screen (e.g. at 2400ms)
-    const glitchTimer = setTimeout(() => {
-      setIsGlitching(false);
-    }, 2400);
-    return () => clearTimeout(glitchTimer);
+    let glitchTimeout: any;
+    let stableTimeout: any;
+
+    const cycleGlitch = () => {
+      setIsGlitching(true);
+      glitchTimeout = setTimeout(() => {
+        setIsGlitching(false);
+        stableTimeout = setTimeout(cycleGlitch, 3500); // 3.5s stable
+      }, 1000); // 1s glitch
+    };
+
+    cycleGlitch();
+
+    return () => {
+      clearTimeout(glitchTimeout);
+      clearTimeout(stableTimeout);
+    };
   }, []);
 
   useEffect(() => {
@@ -61,14 +72,14 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
 
       <div className="z-10 flex flex-col items-center w-full max-w-md px-6">
         <motion.div
-          className="relative z-20 flex flex-col items-center justify-center -mb-12 translate-y-12"
+          className="relative z-20 flex flex-col items-center justify-center -mb-12 translate-y-12 h-8"
           initial={{ scale: 0.95, opacity: 0, filter: "blur(8px)" }}
           animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
           transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
         >
           <span 
-            className={`text-[10px] sm:text-[11px] tracking-[0.3em] font-medium uppercase drop-shadow-[0_0_8px_var(--neon-green-dim-val)] ${isGlitching ? 'text-glitch text-glitch-color' : 'text-neon-green'}`} 
-            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+            className={`text-[10px] sm:text-[11px] tracking-[0.3em] font-medium uppercase drop-shadow-[0_0_8px_var(--neon-green-dim-val)] transform-gpu ${isGlitching ? 'text-glitch text-glitch-color' : 'text-neon-green'}`}
+            style={{ fontFamily: "'JetBrains Mono', monospace", willChange: 'transform, opacity' }}
             data-text="DEVELOPED BY K4N3CO.LABS"
           >
             DEVELOPED BY K4N3CO.LABS
@@ -104,7 +115,8 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
 
         {/* EKG / Heartbeat Monitor */}
         <motion.div 
-          className="w-full max-w-[340px] h-16 relative z-20 mx-auto -mt-24 mb-4 opacity-80"
+          className="w-full max-w-[340px] h-16 relative z-20 mx-auto -mt-24 mb-4 opacity-80 transform-gpu"
+          style={{ willChange: 'transform, opacity' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.8 }}
           transition={{ delay: 0.4, duration: 1 }}
@@ -149,12 +161,29 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
             ) : (
               <motion.button
                 key="dispatch-btn"
-                onClick={onComplete}
-                initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
-                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 255, 204, 0.4)' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onComplete();
+                }}
+                initial={{ opacity: 0, scale: 0.5, filter: 'blur(20px)' }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  filter: 'blur(0px)',
+                  boxShadow: [
+                    '0 0 10px rgba(0, 255, 204, 0.2)',
+                    '0 0 25px rgba(0, 255, 204, 0.5)',
+                    '0 0 10px rgba(0, 255, 204, 0.2)'
+                  ]
+                }}
+                transition={{
+                  opacity: { duration: 0.5 },
+                  scale: { duration: 0.5 },
+                  boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-neon-green text-black px-8 py-3 rounded-lg font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(0,255,204,0.3)] transition-all border border-white/20 active:bg-white"
+                className="bg-neon-green text-black px-5 py-3.5 rounded-xl font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] transition-all border border-white/20 active:bg-white z-[110] relative min-w-[180px]"
               >
                 Dispatch Toolkit
               </motion.button>

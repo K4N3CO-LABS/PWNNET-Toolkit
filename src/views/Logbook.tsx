@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { 
   Database, Scroll, ShieldAlert, CheckCircle, AlertTriangle, 
-  Terminal, ExternalLink, Calendar, Filter, FileCode2
+  Terminal, ExternalLink, Calendar, Filter, FileCode2, Download
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { logService, LogEntry } from '../utils/logger';
+import jsPDF from 'jspdf';
 
 export function Logbook() {
   const [selectedLogsCategory, setSelectedLogsCategory] = useState<string>('ALL');
   const [activeLogId, setActiveLogId] = useState<string | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     const unsubscribe = logService.subscribe((updatedLogs) => {
@@ -31,6 +33,65 @@ export function Logbook() {
     ? logs 
     : logs.filter(log => log.status === selectedLogsCategory || log.module === selectedLogsCategory);
 
+  const exportPDF = () => {
+    if (logs.length === 0) return;
+    setIsGenerating(true);
+
+    try {
+      const doc = new jsPDF();
+      const timestamp = new Date().toLocaleString();
+
+      // Header
+      doc.setFillColor(10, 10, 15);
+      doc.rect(0, 0, 210, 40, 'F');
+
+      doc.setTextColor(0, 255, 204);
+      doc.setFontSize(22);
+      doc.text('PWN//NET TOOLKIT', 15, 20);
+
+      doc.setTextColor(150, 150, 150);
+      doc.setFontSize(10);
+      doc.text('SECURITY OPERATIONS CENTER - AUDIT REGISTRY REPORT', 15, 30);
+      doc.text(`GENERATED: ${timestamp}`, 140, 30);
+
+      let y = 50;
+
+      logs.forEach((log, index) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+
+        // Log Item Box
+        doc.setDrawColor(60, 60, 60);
+        doc.line(15, y, 195, y);
+        y += 10;
+
+        doc.setFontSize(11);
+        doc.setTextColor(255, 255, 255);
+        doc.text(`[${log.status}] ${log.module} - ${log.event}`, 15, y);
+
+        y += 7;
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`TIME: ${log.time}  |  TARGET: ${log.target}  |  ID: ${log.id}`, 15, y);
+
+        y += 7;
+        doc.setTextColor(180, 180, 180);
+        const splitDetails = doc.splitTextToSize(log.details || 'No details provided.', 175);
+        doc.text(splitDetails, 15, y);
+
+        y += (splitDetails.length * 5) + 10;
+      });
+
+      doc.save(`PWNNET_AUDIT_${Date.now()}.pdf`);
+    } catch (e) {
+      console.error('PDF Export Failed', e);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-obsidian relative">
       {/* CRT scanline effect */}
@@ -38,9 +99,19 @@ export function Logbook() {
 
       {/* Control filter tags */}
       <div className="p-4 bg-[#0a0a0a] border-b border-border-gray flex flex-col gap-3 shrink-0">
-        <div className="text-[10px] font-mono text-gray-400 flex items-center gap-1.5 uppercase">
-          <Database size={11} className="text-[#38bdf8]" />
-          <span>Security Operations Center Log Audit Registry</span>
+        <div className="flex justify-between items-center">
+          <div className="text-[10px] font-mono text-gray-400 flex items-center gap-1.5 uppercase">
+            <Database size={11} className="text-[#38bdf8]" />
+            <span>Security Operations Center Log Audit Registry</span>
+          </div>
+          <button
+            onClick={exportPDF}
+            disabled={logs.length === 0 || isGenerating}
+            className="flex items-center gap-1.5 bg-neon-green/10 text-neon-green border border-neon-green/30 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider hover:bg-neon-green hover:text-black transition-all disabled:opacity-30"
+          >
+            <Download size={11} />
+            {isGenerating ? 'GEN...' : 'EXPORT PDF'}
+          </button>
         </div>
         
         <div className="flex flex-col gap-3">

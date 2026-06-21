@@ -1029,6 +1029,8 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
   if (!tool) return null;
 
   const status = getStatusBadge();
+  const commands = ['help', 'nmap', 'ping', 'whois', 'dns', 'admin', 'http', 'crawl', 'sub', 'clear', 'echo', 'exit'];
+
   const handleExtraKey = (key: string) => {
     if (!inputRef.current) return;
     const input = inputRef.current;
@@ -1049,9 +1051,16 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
       setTarget(newVal);
       setTimeout(() => input.setSelectionRange(start + 1, start + 1), 0);
     } else if (key === 'TAB') {
-      const newVal = val.slice(0, start) + '\t' + val.slice(end);
-      setTarget(newVal);
-      setTimeout(() => input.setSelectionRange(start + 1, start + 1), 0);
+      // Basic Tab Completion
+      const currentCmd = val.trim().split(' ')[0];
+      if (currentCmd) {
+        const matches = commands.filter(c => c.startsWith(currentCmd));
+        if (matches.length === 1) {
+          setTarget(matches[0] + ' ');
+        } else if (matches.length > 1) {
+          addOutput('info', `Matches: ${matches.join(', ')}`);
+        }
+      }
     } else if (key === '←') {
       input.setSelectionRange(Math.max(0, start - 1), Math.max(0, start - 1));
     } else if (key === '→') {
@@ -1064,8 +1073,6 @@ export function TerminalEmulator({ tool, onClose }: TerminalEmulatorProps) {
       historyUp();
     } else if (key === '↓') {
       historyDown();
-    } else if (key === 'CTRL' || key === 'ALT' || key === 'PGUP' || key === 'PGDN') {
-      // Stub for unsupported sequences, just visual for now
     }
   };
 

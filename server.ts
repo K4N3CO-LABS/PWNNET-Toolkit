@@ -45,6 +45,11 @@ const checkPort = (port: number, host: string, timeout = 2000): Promise<boolean>
   });
 };
 
+// Helper to clean target (removes http/https, port, and trailing slash)
+const cleanTarget = (target: string): string => {
+  return target.replace(/^https?:\/\//, '').split('/')[0].split(':')[0];
+};
+
 // --- API ROUTES ---
 
 // 0. Status
@@ -58,6 +63,8 @@ app.get('/api/net/portscan', async (req, res) => {
   if (!target || typeof target !== 'string') {
     return res.status(400).json({ error: 'Target is required' });
   }
+
+  const hostTarget = cleanTarget(target);
 
   const defaultPorts = [
     { port: 21, service: 'FTP' },
@@ -82,7 +89,7 @@ app.get('/api/net/portscan', async (req, res) => {
   try {
     const results = await Promise.all(
       portsToScan.map(async (p) => {
-        const isOpen = await checkPort(p.port, target, 2500);
+        const isOpen = await checkPort(p.port, hostTarget, 2500);
         return { ...p, isOpen };
       })
     );
@@ -98,11 +105,12 @@ app.get('/api/net/blacklist', async (req, res) => {
   if (!target || typeof target !== 'string') {
     return res.status(400).json({ error: 'Target is required' });
   }
+  const hostTarget = cleanTarget(target);
   try {
-    const isIp = /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/.test(target);
-    let ip = target;
+    const isIp = /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/.test(hostTarget);
+    let ip = hostTarget;
     if (!isIp) {
-      const lookRes = await dns.promises.lookup(target);
+      const lookRes = await dns.promises.lookup(hostTarget);
       ip = lookRes.address;
     }
     const reverseIp = ip.split('.').reverse().join('.');
@@ -126,24 +134,24 @@ app.get('/api/net/blacklist', async (req, res) => {
 app.get('/api/net/dns', async (req, res) => {
   const { target, server, reverse } = req.query;
   if (!target || typeof target !== 'string') return res.status(400).json({ error: 'Target required' });
-  
+
+  const hostTarget = cleanTarget(target);
+
   try {
     const resolver = new dns.promises.Resolver();
     if (server && typeof server === 'string' && server !== 'default') {
-      try { resolver.setServers([server]); } catch (e) {
-          // fallback
-      }
+      try { resolver.setServers([server]); } catch (e) {}
     }
 
     let output = '';
-    output += `; <<>> PWN//NET DNS Lookup <<>> ${target}\n`;
+    output += `; <<>> PWN//NET DNS Lookup <<>> ${hostTarget}\n`;
     if (server && server !== 'default') output += `; Server: ${server}\n`;
     output += `\n`;
 
     if (reverse === 'true') {
        try {
-          const hostnames = await resolver.reverse(target);
-          output += ';; REVERSE RECORDS:\n' + hostnames.map(r => `${target}.\tIN\tPTR\t${r}`).join('\n') + '\n\n';
+          const hostnames = await resolver.reverse(hostTarget);
+          output += ';; REVERSE RECORDS:\n' + hostnames.map(r => `${hostTarget}.\tIN\tPTR\t${r}`).join('\n') + '\n\n';
        } catch (e: any) {
           output += `;; REVERSE LOOKUP FAILED: ${e.message}\n`;
        }
@@ -151,20 +159,20 @@ app.get('/api/net/dns', async (req, res) => {
     }
 
     try {
-       const ns = await resolver.resolveNs(target);
-       output += ';; NS RECORDS:\n' + ns.map(r => `${target}.\tIN\tNS\t${r}`).join('\n') + '\n\n';
+       const ns = await resolver.resolveNs(hostTarget);
+       output += ';; NS RECORDS:\n' + ns.map(r => `${hostTarget}.\tIN\tNS\t${r}`).join('\n') + '\n\n';
     } catch(e) {}
     try {
-       const a = await resolver.resolve4(target);
-       output += ';; A RECORDS:\n' + a.map(r => `${target}.\tIN\tA\t${r}`).join('\n') + '\n\n';
+       const a = await resolver.resolve4(hostTarget);
+       output += ';; A RECORDS:\n' + a.map(r => `${hostTarget}.\tIN\tA\t${r}`).join('\n') + '\n\n';
     } catch(e) {}
     try {
-       const mx = await resolver.resolveMx(target);
-       output += ';; MX RECORDS:\n' + mx.map(r => `${target}.\tIN\tMX\t${r.priority} ${r.exchange}`).join('\n') + '\n\n';
+       const mx = await resolver.resolveMx(hostTarget);
+       output += ';; MX RECORDS:\n' + mx.map(r => `${hostTarget}.\tIN\tMX\t${r.priority} ${r.exchange}`).join('\n') + '\n\n';
     } catch(e) {}
     try {
-       const txt = await resolver.resolveTxt(target);
-       output += ';; TXT RECORDS:\n' + txt.map(r => `${target}.\tIN\tTXT\t"${r.join('')}"`).join('\n') + '\n';
+       const txt = await resolver.resolveTxt(hostTarget);
+       output += ';; TXT RECORDS:\n' + txt.map(r => `${hostTarget}.\tIN\tTXT\t"${r.join('')}"`).join('\n') + '\n';
     } catch(e) {}
     res.json({ result: output || 'No DNS records found.' });
   } catch (e) {
@@ -177,12 +185,14 @@ app.get('/api/net/whois', async (req, res) => {
   const { target } = req.query;
   if (!target || typeof target !== 'string') return res.status(400).json({ error: 'Target required' });
 
+  const hostTarget = cleanTarget(target);
+
   try {
     const socket = new net.Socket();
     let data = '';
     socket.setTimeout(5000);
     socket.connect(43, 'whois.iana.org', () => {
-      socket.write(target + '\r\n');
+      socket.write(hostTarget + '\r\n');
     });
     socket.on('data', chunk => data += chunk);
     socket.on('end', () => {
@@ -192,7 +202,7 @@ app.get('/api/net/whois', async (req, res) => {
     socket.on('error', async () => {
         // Fallback to web API if port 43 blocked
         try {
-            const fb = await fetch(`https://rdap.org/domain/${target}`).then(r => r.json());
+            const fb = await fetch(`https://rdap.org/domain/${hostTarget}`).then(r => r.json());
             res.json({ result: JSON.stringify(fb, null, 2) });
         } catch(e) {
             res.json({ result: 'Whois lookup failed (connection error & fallback failed).' });
@@ -394,10 +404,12 @@ app.get('/api/net/mail', async (req, res) => {
     return res.status(400).json({ error: 'Target is required' });
   }
 
+  const hostTarget = cleanTarget(target);
+
   try {
     let mxRecords = [];
     try {
-      mxRecords = await resolveMx(target);
+      mxRecords = await resolveMx(hostTarget);
       // Sort by priority
       mxRecords.sort((a, b) => a.priority - b.priority);
     } catch (e) {
@@ -406,7 +418,7 @@ app.get('/api/net/mail', async (req, res) => {
 
     let txtRecordsStr = [];
     try {
-      const txtRecords = await resolveTxt(target);
+      const txtRecords = await resolveTxt(hostTarget);
       txtRecordsStr = txtRecords.map(t => t.join(''));
     } catch (e) {
       // Ignored if no TXT
@@ -418,7 +430,7 @@ app.get('/api/net/mail', async (req, res) => {
     // Attempt DMARC lookup if target is domain
     let dmarc = [];
     try {
-      const dmarcTxt = await resolveTxt(`_dmarc.${target}`);
+      const dmarcTxt = await resolveTxt(`_dmarc.${hostTarget}`);
       dmarc = dmarcTxt.map(t => t.join('')).filter(r => r.startsWith('v=DMARC1'));
     } catch (e) {
       // Ignored
@@ -496,15 +508,16 @@ app.get('/api/net/netscan', async (req, res) => {
     return res.status(400).json({ error: 'Target is required' });
   }
 
+  const hostTarget = cleanTarget(target);
+
   try {
     // Basic IP detection
-    let scanIp = target;
-    if (!/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/.test(target)) {
+    let scanIp = hostTarget;
+    if (!/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/.test(hostTarget)) {
        try {
-         const dnsRes = await resolveTxt(target); // just to check if it resolves, fallback to lookup
+         const dnsRes = await resolveTxt(hostTarget); // just to check if it resolves, fallback to lookup
        } catch(e) {}
-       // Node defaults to callback dns.lookup, let's use dns.promises
-       const lookRes = await dns.promises.lookup(target);
+       const lookRes = await dns.promises.lookup(hostTarget);
        scanIp = lookRes.address;
     }
 
@@ -543,6 +556,8 @@ app.get('/api/net/smb', async (req, res) => {
     return res.status(400).json({ error: 'Target is required' });
   }
 
+  const hostTarget = cleanTarget(target);
+
   const checkSmb = (): Promise<string> => {
     return new Promise((resolve) => {
       const socket = new net.Socket();
@@ -563,11 +578,8 @@ app.get('/api/net/smb', async (req, res) => {
         socket.destroy();
         if (!resolved) { resolved = true; resolve('closed'); }
       });
-      
-      let hostIp = target;
-      if (target.startsWith('http')) hostIp = target.replace(/^https?:\/\//, '').split('/')[0];
-      
-      socket.connect(445, hostIp);
+
+      socket.connect(445, hostTarget);
     });
   };
 
@@ -586,6 +598,8 @@ app.get('/api/net/shell', async (req, res) => {
     return res.status(400).json({ error: 'Target is required' });
   }
 
+  const hostTarget = cleanTarget(target);
+
   const grabBanner = (port: number, host: string, timeout = 3000): Promise<{open: boolean, banner: string, error?: string}> => {
     return new Promise((resolve) => {
       const socket = new net.Socket();
@@ -601,8 +615,7 @@ app.get('/api/net/shell', async (req, res) => {
         }
       });
 
-      socket.on('connect', () => {
-      });
+      socket.on('connect', () => {});
 
       socket.on('timeout', () => {
         tcpError = 'ETIMEDOUT (Connection timed out)';
@@ -615,8 +628,8 @@ app.get('/api/net/shell', async (req, res) => {
       });
 
       socket.on('close', () => {
-        resolve({ 
-          open: buf.length > 0 || socket.bytesRead > 0, 
+        resolve({
+          open: buf.length > 0 || socket.bytesRead > 0,
           banner: buf.trim(),
           error: tcpError
         });
@@ -632,8 +645,8 @@ app.get('/api/net/shell', async (req, res) => {
 
   try {
     const [ssh, ftp] = await Promise.all([
-      grabBanner(22, target),
-      grabBanner(21, target)
+      grabBanner(22, hostTarget),
+      grabBanner(21, hostTarget)
     ]);
     res.json({ ssh, ftp });
   } catch (error) {
@@ -648,12 +661,14 @@ app.get('/api/net/geoip', async (req, res) => {
     return res.status(400).json({ error: 'Target is required' });
   }
 
+  const hostTarget = cleanTarget(target);
+
   try {
-    let lookupTarget = target;
+    let lookupTarget = hostTarget;
     // Resolve DNS First if it's a domain
-    if (!/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/.test(target)) {
+    if (!/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/.test(hostTarget)) {
       try {
-        const lookRes = await dns.promises.lookup(target);
+        const lookRes = await dns.promises.lookup(hostTarget);
         lookupTarget = lookRes.address;
       } catch (err) {
          return res.status(404).json({ error: 'DNS resolution failed for target host' });
@@ -682,9 +697,12 @@ app.get('/api/net/ping', async (req, res) => {
     return res.status(400).json({ error: 'Target is required' });
   }
 
-  let hostIp = target;
+  // Clean target
+  const hostTarget = target.replace(/^https?:\/\//, '').split('/')[0].split(':')[0];
+
+  let hostIp = hostTarget;
   try {
-    const lookRes = await dns.promises.lookup(target);
+    const lookRes = await dns.promises.lookup(hostTarget);
     hostIp = lookRes.address;
   } catch (e) {
     return res.status(404).json({ error: 'DNS resolution failed.' });
@@ -737,12 +755,13 @@ app.get('/api/net/certs', async (req, res) => {
     return res.status(400).json({ error: 'Target is required' });
   }
 
+  const hostTarget = cleanTarget(target);
   const tls = require('tls');
   
   const options = {
-    host: target,
+    host: hostTarget,
     port: 443,
-    servername: target,
+    servername: hostTarget,
     rejectUnauthorized: false
   };
 
@@ -1478,15 +1497,16 @@ app.get('/api/net/wpscan', async (req, res) => {
 
     const fetchNVD = async () => {
        const end = new Date();
-       const start = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days (Safer range)
+       const start = new Date(end.getTime() - 14 * 24 * 60 * 60 * 1000); // 14 days (Small range for faster response)
 
-       const fmtDate = (d: Date) => d.toISOString().split('.')[0] + '.000'; // Format: YYYY-MM-DDTHH:mm:ss.000
+       // NVD 2.0 requires full ISO with milliseconds and Z
+       const fmtDate = (d: Date) => d.toISOString();
 
        const url = `https://services.nvd.nist.gov/rest/json/cves/2.0?pubStartDate=${encodeURIComponent(fmtDate(start))}&pubEndDate=${encodeURIComponent(fmtDate(end))}&startIndex=${startIndex}&resultsPerPage=${resultsPerPage}`;
        
        console.log(`[CVE] Querying NVD: ${url}`);
        const controller = new AbortController();
-       const t = setTimeout(() => controller.abort(), 10000);
+       const t = setTimeout(() => controller.abort(), 12000);
 
        const r = await fetch(url, {
            signal: controller.signal,
@@ -1495,7 +1515,10 @@ app.get('/api/net/wpscan', async (req, res) => {
            }
        });
        clearTimeout(t);
-       if (!r.ok) throw new Error(`NVD API returned ${r.status}`);
+       if (!r.ok) {
+          const body = await r.text();
+          throw new Error(`NVD API returned ${r.status}: ${body.substring(0, 50)}`);
+       }
        const nvdData = await r.json();
        
        if (nvdData?.vulnerabilities && nvdData.vulnerabilities.length > 0) {
@@ -1515,10 +1538,10 @@ app.get('/api/net/wpscan', async (req, res) => {
     };
 
     const fetchCircl = async () => {
-       console.log(`[CVE] Querying Circl.lu Fallback...`);
+       console.log(`[CVE] Querying Circl.lu Fallback (100 items)...`);
        const controller = new AbortController();
-       const t = setTimeout(() => controller.abort(), 15000);
-       const altRes = await fetch('https://cve.circl.lu/api/last/30', { signal: controller.signal });
+       const t = setTimeout(() => controller.abort(), 20000);
+       const altRes = await fetch('https://cve.circl.lu/api/last/100', { signal: controller.signal });
        clearTimeout(t);
        if (!altRes.ok) throw new Error(`Circl.lu returned ${altRes.status}`);
        const altData = await altRes.json();
@@ -1544,11 +1567,12 @@ app.get('/api/net/wpscan', async (req, res) => {
              }
           });
 
+          // Deduplicate and filter for CVE, GHSA, or MAL IDs
           const seen = new Set();
           const formatted = allVulnerabilities.filter(v => {
              if (seen.has(v.id)) return false;
              seen.add(v.id);
-             return v.id !== 'Unknown' && v.id.startsWith('CVE-');
+             return v.id !== 'Unknown' && (v.id.startsWith('CVE-') || v.id.startsWith('GHSA-') || v.id.startsWith('MAL-'));
           });
 
           console.log(`[CVE] Circl.lu Success: ${formatted.length} items extracted`);
@@ -1645,9 +1669,29 @@ app.get('/api/net/wpscan', async (req, res) => {
     const headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) PWNNET-Toolkit/1.0' };
 
     try {
-       // 1. Try MITRE
+       // 1. Try NVD first as it's official and has richest data
        try {
-          const res1 = await fetch(`https://cveawg.mitre.org/api/cve/${cid}`, { headers });
+          const tc2 = new AbortController();
+          const t2 = setTimeout(() => tc2.abort(), 8000);
+          const res2 = await fetch(`https://services.nvd.nist.gov/rest/json/cve/2.0?cveId=${cid}`, { signal: tc2.signal, headers });
+          clearTimeout(t2);
+          if (res2.ok) {
+             const nvdData = await res2.json();
+             if (nvdData?.vulnerabilities?.[0]) {
+                console.log(`[CVE] Found ${cid} on NVD`);
+                return res.json({ fallback: false, data: nvdData.vulnerabilities[0].cve });
+             }
+          }
+       } catch(e) {
+          console.warn(`[CVE] NVD search failed for ${cid}:`, e);
+       }
+
+       // 2. Try MITRE
+       try {
+          const tc1 = new AbortController();
+          const t1 = setTimeout(() => tc1.abort(), 5000);
+          const res1 = await fetch(`https://cveawg.mitre.org/api/cve/${cid}`, { signal: tc1.signal, headers });
+          clearTimeout(t1);
           if (res1.ok) {
              const data = await res1.json();
              if (data && data.cveMetadata) {
@@ -1657,21 +1701,12 @@ app.get('/api/net/wpscan', async (req, res) => {
           }
        } catch(e) {}
 
-       // 2. Try NVD
-       try {
-          const res2 = await fetch(`https://services.nvd.nist.gov/rest/json/cve/2.0?cveId=${cid}`, { headers });
-          if (res2.ok) {
-             const nvdData = await res2.json();
-             if (nvdData?.vulnerabilities?.[0]) {
-                console.log(`[CVE] Found ${cid} on NVD`);
-                return res.json({ fallback: false, data: nvdData.vulnerabilities[0].cve });
-             }
-          }
-       } catch(e) {}
-
        // 3. Try CIRCL
        try {
-          const res3 = await fetch(`https://cve.circl.lu/api/cve/${cid}`, { headers });
+          const tc3 = new AbortController();
+          const t3 = setTimeout(() => tc3.abort(), 5000);
+          const res3 = await fetch(`https://cve.circl.lu/api/cve/${cid}`, { signal: tc3.signal, headers });
+          clearTimeout(t3);
           if (res3.ok) {
              const data = await res3.json();
              if (data && data.id) {

