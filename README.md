@@ -2,9 +2,9 @@
 
 [![homescreen.png](https://i.postimg.cc/BZgFgfkK/homescreen.png)](https://postimg.cc/Jtstrv1r)
 
-**PWN//NET** is the ultimate ethical bug-hunting and networking toolkit designed for security researchers, penetration testers, and enthusiasts. From identifying critical vulnerabilities to uncovering hidden attack surfaces, PWN//NET equips you with **45+ real-world scanners and diagnostic tools** to find exploitable bugs, exposed secrets, and misconfigurations — all in a clean, responsive interface.
+**PWN//NET** is an **ethical bug-hunting** and **networking toolkit** designed for security researchers, penetration testers, and enthusiasts. From identifying **critical vulnerabilities** to uncovering hidden attack surfaces, **PWN//NET** equips you with **45+ real-world scanners and diagnostic tools** to find exploitable **bugs**, **exposed secrets**, and **misconfigurations** — all in a clean, responsive interface.
 
-Whether you're a beginner learning the ropes of ethical hacking or a seasoned professional hunting for bounties on production targets, PWN//NET provides the advanced reconnaissance capabilities you need to succeed.
+Whether you're a **beginner** learning the ropes of **ethical hacking** or a **seasoned professional** hunting for **bounties** on production targets, **PWN//NET** provides the **advanced reconnaissance** capabilities you need to succeed.
 
 **Available on Web + Android APK**
 
@@ -12,7 +12,7 @@ Whether you're a beginner learning the ropes of ethical hacking or a seasoned pr
 
 ## ✨ Core Features
 
-- **⚡ Tools Grid** — 48 ready-to-use tools including:
+- **⚡ Tools Grid** — **48 ready-to-use tools** including:
   - CVE Database & ExploitDB 
   - AI Vulnerability Analyzer
   - Subdomain Enumeration
@@ -30,13 +30,13 @@ Whether you're a beginner learning the ropes of ethical hacking or a seasoned pr
   - Native Nmap
   - And many more...
 
-- **🐞 Ethical Bug Hunting** — Purpose-built for security researchers, beginners, and seasoned professionals to identify real attack vectors like exposed API keys, subdomains, and loose CORS policies.
+- **🐞 Ethical Bug Hunting** — **Purpose-built for security researchers, beginners, and seasoned professionals** to identify real **attack vectors** like **exposed API keys, subdomains, and loose CORS** policies.
 
-- **🖥️ Live Terminal** — Real-time command output so you can see exactly what’s happening under the hood.
+- **🖥️ Live Terminal** — **Real-time** command **output** so you can see exactly what’s happening under the hood.
 
-- **📜 Logs System** — Automatically saves your activity and results for later review.
+- **📜 Logs System** — Automatically saves your **activity and results** for later review.
 
-- **📚 Learning Resources** — Built-in references:
+- **📚 Learning Resources** — **Built-in** references:
   - Common Ports
   - OSI Model
   - Nmap Cheat Sheet
@@ -47,15 +47,15 @@ Whether you're a beginner learning the ropes of ethical hacking or a seasoned pr
 
 ### 📱 Mobile App (Android)
 
-1. Download the latest **`.apk`** from the [Releases](https://github.com/K4N3CO-LABS/PWNNET-Toolkit/releases) page.
-2. Enable **"Install from Unknown Sources"** in your Android security settings.
-3. Install and open the app.
+1. Download the **latest** `.apk` from the [Releases](https://github.com/K4N3CO-LABS/PWNNET-Toolkit/releases) page.
+2. Enable **"Install from Unknown Sources"** in your Android **security** settings.
+3. **Install**, then **Open** the app.
 
-> **Note**: The mobile version is perfect for on-the-go network reconnaissance.
+> **Note**: The **mobile version** is perfect for **on-the-go** network **reconnaissance**.
 
 ---
 
-## 🚀 Running Locally (On PC)
+## 🚀 Run Locally (On PC)
 
 ```bash
 # 1. Clone the repository
@@ -63,16 +63,18 @@ git clone https://github.com/K4N3CO-LABS/PWNNET-Toolkit.git
 
 # 2. Navigate into the project
 cd PWNNET-Toolkit-main
-
+```
+```bash
 # 3. Install dependencies
 npm install
-
+```
+```bash
 # 4. Start the development server
 npm run dev
 ```
-To open app:
+**To open app:**
 
-Click the URL shown in the terminal (usually http://localhost:3000 or http://0.0.0.0:3000).
+**Click** the **URL** shown in the **terminal** (usually http://localhost:3000 or http://0.0.0.0:3000).
 
 ---
 
@@ -89,16 +91,18 @@ Click the URL shown in the terminal (usually http://localhost:3000 or http://0.0
 ---
 
 ### 📱 Android Build (Capacitor)
-This project uses Capacitor to wrap the web app into a native Android project. The native code is located in the `android/` folder, which can be opened directly in **Android Studio**.
+This project uses **Capacitor** to wrap the web app into a **native Android project**. The native code is **located** in the `android/` folder, which can be **opened directly** in **Android Studio**.
 
-To build and sync the latest web code to the Android project:
+To **build and sync** the latest web code to the **Android project**:
 ```bash
 # 1. Build the frontend web bundle
 npm run build
-
+```
+```bash
 # 2. Sync the built files and plugins to the Android project
 npx cap sync android
-
+```
+```bash
 # 3. Open in Android Studio
 npx cap open android
 ```
@@ -107,16 +111,18 @@ npx cap open android
 
 ### 📌 Roadmap / Future Plans
 
-- Add more advanced tools (vulnerability scanning, packet crafting, etc.)
-- Export results as PDF, JSON, or CSV
-- Desktop application using Electron
+- Add more **advanced tools** (vulnerability scanning, packet crafting, etc.)
+- **Export** results as **PDF**, **JSON**, or **CSV**
+- **Desktop** application using **Electron**
 ---
 
 ### ⭐ Support the Project
 
-If you find **PWN//NET** useful, please consider giving the project a **star** ⭐ — it helps a lot!
+If you find **PWN//NET** **useful**, please consider giving the project a **Star** ⭐ — it **helps** a lot!
 
-**Donations (optional but greatly appreciated):**
+**Feel free** to **open issues** or **submit pull** requests. **Contributions are always welcome**!
+
+**Donations** *(optional but greatly appreciated):*
 
 **Bitcoin: (BTC)**
 ```
@@ -126,12 +132,12 @@ bc1q6lmkuju3kf7f8624fwt5qs7k5mf63mekgcnzf4
 
 ### Important
 
-PWN//NET-Toolkit is for educational and authorized use. Only use on networks and systems you have  permission to test on. 
+**PWN//NET-Toolkit** is for **educational and authorized use**.
 
-— Enjoy responsibly! Feel free to open issues or submit pull requests. Contributions are welcome!
+**Only** use on **networks** and **systems** you have **permission** to test on. **Enjoy responsibly**!
 
 ---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is **licensed** under the [MIT License](LICENSE).
