@@ -6,6 +6,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
   const [currentText, setCurrentText] = useState("");
   const [progress, setProgress] = useState(0);
   const [isGlitching, setIsGlitching] = useState(true);
+  const [isSequenceFinished, setIsSequenceFinished] = useState(false);
 
   useEffect(() => {
     // Stop glitching close to the end of splash screen (e.g. at 2400ms)
@@ -36,12 +37,12 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         setProgress((currentLog / (startupSequence.length - 1)) * 100);
       } else {
         clearInterval(interval);
-        setTimeout(onComplete, 1600); // 400ms from current tick + 1600ms = 2s total visible non-glitch
+        setIsSequenceFinished(true);
       }
     }, 400);
 
     return () => clearInterval(interval);
-  }, [onComplete]);
+  }, []);
 
   return (
     <motion.div 
@@ -132,17 +133,33 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           <p className="text-gray-400 font-medium text-sm tracking-[0.3em] uppercase glow-text text-shadow-sm">Advanced Network Exploitation Toolkit</p>
         </motion.div>
 
-        <div className="w-full max-w-[240px] flex flex-col items-center">
-          <motion.div 
-            key={currentText}
-            className="text-[9px] text-gray-500 font-medium tracking-widest uppercase h-4"
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.2 }}
-          >
-            {currentText}
-          </motion.div>
+        <div className="w-full max-w-[240px] flex flex-col items-center min-h-[48px] justify-center">
+          <AnimatePresence mode="wait">
+            {!isSequenceFinished ? (
+              <motion.div
+                key="loading-text"
+                className="text-[9px] text-gray-500 font-medium tracking-widest uppercase h-4"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.2 }}
+              >
+                {currentText}
+              </motion.div>
+            ) : (
+              <motion.button
+                key="dispatch-btn"
+                onClick={onComplete}
+                initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 255, 204, 0.4)' }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-neon-green text-black px-8 py-3 rounded-lg font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(0,255,204,0.3)] transition-all border border-white/20 active:bg-white"
+              >
+                Dispatch Toolkit
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </motion.div>
