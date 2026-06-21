@@ -2,9 +2,9 @@
 
 [![homescreen.png](https://i.postimg.cc/BZgFgfkK/homescreen.png)](https://postimg.cc/Jtstrv1r)
 
-**PWN//NET** is an **ethical bug-hunting** and **networking toolkit** designed for **security researchers, penetration testers, and enthusiasts**. From identifying **critical vulnerabilities** to uncovering hidden attack surfaces, **PWN//NET** equips you with **45+ real-world scanners and diagnostic tools** to find exploitable **bugs**, **exposed secrets**, and **misconfigurations** — all in a clean, responsive interface.
+**PWN//NET** is an **ultimate ethical bug-hunting** and **networking toolkit** designed for **security researchers, penetration testers, and enthusiasts**. From identifying **critical vulnerabilities** to uncovering **hidden attack surfaces**, **PWN//NET** equips you with **45+ real-world scanners and diagnostic tools** to find **exploitable bugs**, **exposed secrets**, and **misconfigurations** — all in a **clean, responsive interface**.
 
-Whether you're a **beginner** learning the ropes of **ethical hacking** or a **seasoned professional** hunting for **bounties** on production targets, **PWN//NET** provides the **advanced reconnaissance** capabilities you need to succeed.
+Whether you're a **beginner** learning the ropes of **ethical hacking** or a **seasoned professional** hunting for **bounties** on production **targets**, **PWN//NET** provides the **advanced reconnaissance** capabilities you need to **succeed**.
 
 **Available on Web + Android APK**
 
@@ -32,9 +32,9 @@ Whether you're a **beginner** learning the ropes of **ethical hacking** or a **s
 
 - **🐞 Ethical Bug Hunting** — **Purpose-built for security researchers, beginners, and seasoned professionals** to identify real **attack vectors** like **exposed API keys, subdomains, and loose CORS** policies.
 
-- **🖥️ Live Terminal** — **Real-time** command **output** so you can see exactly what’s happening under the hood.
+- **🖥️ Live Terminal** — **Real-time** command **output** so you can see **exactly** what’s happening under the hood.
 
-- **📜 Logs System** — Automatically saves your **activity and results** for later review.
+- **📜 Logs System** — Automatically saves your **activity and results** for later **review**.
 
 - **📚 Learning Resources** — **Built-in** references:
   - Common Ports
@@ -46,12 +46,13 @@ Whether you're a **beginner** learning the ropes of **ethical hacking** or a **s
 ---
 
 ### 📱 Mobile App (Android)
+<a href='https://postimg.cc/WDc6v9CG' target='_blank'><img src='https://i.postimg.cc/WDc6v9CG/PWNNET-ICON5.jpg' border='0' alt='PWNNET-ICON5'></a>  <a href="https://postimg.cc/zyvSL93G" target="_blank"><img src="https://i.postimg.cc/zyvSL93G/Screenshot-2026-06-21-at-5-34-23-AM.png" alt="Screenshot-2026-06-21-at-5-34-23-AM"></a> <a href="https://postimg.cc/CR5HZWdM" target="_blank"><img src="https://i.postimg.cc/CR5HZWdM/Screenshot-2026-06-21-at-5-35-11-AM.png" alt="Screenshot-2026-06-21-at-5-35-11-AM"></a> <a href="https://postimg.cc/xX8ykWq0" target="_blank"><img src="https://i.postimg.cc/xX8ykWq0/Screenshot-2026-06-21-at-5-35-54-AM.png" alt="Screenshot-2026-06-21-at-5-35-54-AM"></a> <a href="https://postimg.cc/qNqXt9g4" target="_blank"><img src="https://i.postimg.cc/qNqXt9g4/Screenshot-2026-06-21-at-5-36-11-AM.png" alt="Screenshot-2026-06-21-at-5-36-11-AM"></a>
 
-1. Download the **latest** `.apk` from the [Releases](https://github.com/K4N3CO-LABS/PWNNET-Toolkit/releases) page.
-2. Enable **"Install from Unknown Sources"** in your Android **security** settings.
+1. **Download** the **latest** `.apk` from the [Releases](https://github.com/K4N3CO-LABS/PWNNET-Toolkit/releases) page.
+2. **Enable "Install from Unknown Sources"** in your Android **security** settings.
 3. **Install**, then **Open** the app.
 
-> **Note**: The **mobile version** is perfect for **on-the-go** network **reconnaissance**.
+> **Note**: The **mobile version** is **perfect** for **on-the-go** network **reconnaissance**.
 
 ---
 
@@ -91,9 +92,9 @@ npm run dev
 ---
 
 ### 📱 Android Build (Capacitor)
-This project uses **Capacitor** to wrap the web app into a **native Android project**. The native code is **located** in the `android/` folder, which can be **opened directly** in **Android Studio**.
+This project uses **Capacitor** to wrap the web app into a **native Android project**. The **native** code is **located** in the `android/` folder, which can be **opened directly** in **Android Studio**.
 
-To **build and sync** the latest web code to the **Android project**:
+To **build and sync** the **latest web code** to the **Android project**:
 ```bash
 # 1. Build the frontend web bundle
 npm run build
@@ -111,7 +112,7 @@ npx cap open android
 
 ### 📌 Roadmap / Future Plans
 
-- Add more **advanced tools** (vulnerability scanning, packet crafting, etc.)
+- **Add** more **advanced tools** (vulnerability scanning, packet crafting, etc.)
 - **Export** results as **PDF**, **JSON**, or **CSV**
 - **Desktop** application using **Electron**
 ---
