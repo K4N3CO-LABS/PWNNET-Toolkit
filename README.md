@@ -1,6 +1,7 @@
 [![Screenshot-20260528-172644-Bazaart.jpg](https://i.postimg.cc/FsFhjMXz/Screenshot-20260528-172644-Bazaart.jpg)](https://postimg.cc/s18Fz0XC)
 
 [![homescreen.png](https://i.postimg.cc/BZgFgfkK/homescreen.png)](https://postimg.cc/Jtstrv1r)
+## **About**
 
 **PWN//NET** is an **ethical bug-hunting** and **networking toolkit** designed for **security researchers, penetration testers, and enthusiasts**. From identifying **critical vulnerabilities** to uncovering **hidden attack surfaces**, **PWN//NET** equips you with **45+ real-world scanners and diagnostic tools** to find **exploitable bugs**, **exposed secrets**, and **misconfigurations** — all in a **clean, responsive interface**.
 
@@ -12,7 +13,7 @@ Whether you're a **beginner** learning the ropes of **ethical hacking** or a **s
 
 ## ✨ Core Features
 
-- **⚡ Tools Grid** — **48 ready-to-use tools** including:
+- **⚡ Tools Grid** — **48 ready-to-use tools including**:
   - CVE Database & ExploitDB 
   - AI Vulnerability Analyzer
   - Subdomain Enumeration
@@ -45,13 +46,13 @@ Whether you're a **beginner** learning the ropes of **ethical hacking** or a **s
 
 ---
 
-### Screenshots 
+### **Screenshots** 
 
 <a href='https://postimg.cc/WDc6v9CG' target='_blank'><img src='https://i.postimg.cc/WDc6v9CG/PWNNET-ICON5.jpg' border='0' alt='PWNNET-ICON5'></a>  <a href="https://postimg.cc/zyvSL93G" target="_blank"><img src="https://i.postimg.cc/zyvSL93G/Screenshot-2026-06-21-at-5-34-23-AM.png" alt="Screenshot-2026-06-21-at-5-34-23-AM"></a> <a href="https://postimg.cc/CR5HZWdM" target="_blank"><img src="https://i.postimg.cc/CR5HZWdM/Screenshot-2026-06-21-at-5-35-11-AM.png" alt="Screenshot-2026-06-21-at-5-35-11-AM"></a> <a href="https://postimg.cc/xX8ykWq0" target="_blank"><img src="https://i.postimg.cc/xX8ykWq0/Screenshot-2026-06-21-at-5-35-54-AM.png" alt="Screenshot-2026-06-21-at-5-35-54-AM"></a> <a href="https://postimg.cc/qNqXt9g4" target="_blank"><img src="https://i.postimg.cc/qNqXt9g4/Screenshot-2026-06-21-at-5-36-11-AM.png" alt="Screenshot-2026-06-21-at-5-36-11-AM"></a>
 
 ---
 
-### 📱 Mobile App (Android)
+### 📱 **Mobile App (Android)**
 
 1. **Download** the **latest** `.apk` from the [Releases](https://github.com/K4N3CO-LABS/PWNNET-Toolkit/releases) page.
 2. **Enable "Install from Unknown Sources"** in your Android **security** settings.
@@ -61,7 +62,7 @@ Whether you're a **beginner** learning the ropes of **ethical hacking** or a **s
 
 ---
 
-## 🚀 Run Locally (On PC)
+## 🚀 **Run Locally (On PC)**
 
 ```bash
 # 1. Clone the repository
@@ -80,11 +81,11 @@ npm run dev
 ```
 **To open app:**
 
-**Click** the **URL** shown in the **terminal** (usually http://localhost:3000 or http://0.0.0.0:3000).
+**Click** the **URL** shown in the **terminal** *(usually http://localhost:3000 or http://0.0.0.0:3000)*.
 
 ---
 
- ### 🛠️ Tech Stack
+ ### 🛠️ **Tech Stack**
 
 | Layer          | Technology                          |
 |----------------|-------------------------------------|
@@ -115,20 +116,20 @@ npx cap open android
 
 ---
 
-### 📌 Roadmap / Future Plans
+### 📌 **Roadmap / Future Plans**
 
-- **Add** more **advanced tools** (vulnerability scanning, packet crafting, etc.)
+- **Add** more **advanced tools** *(vulnerability scanning, packet crafting, etc.)*
 - **Export** results as **PDF**, **JSON**, or **CSV**
 - **Desktop** application using **Electron**
 ---
 
-### ⭐ Support the Project
+### ⭐ **Support the Project**
 
-If you find **PWN//NET** **useful**, please consider giving the project a **Star** ⭐ — it **helps** a lot!
+If you find **PWN//NET** **useful**, **please** consider giving the project a **Star** ⭐ — it **helps** a lot!
 
 **Feel free** to **open issues** or **submit pull** requests. **Contributions are always welcome**!
 
-**Donations** *(optional but greatly appreciated):*
+**Donations** *(optional but greatly appreciated)*:
 
 **Bitcoin: (BTC)**
 ```
@@ -136,7 +137,7 @@ bc1q6lmkuju3kf7f8624fwt5qs7k5mf63mekgcnzf4
 ```
 ---
 
-### Important
+### **Important**
 
 **PWN//NET-Toolkit** is for **educational and authorized use**.
 
@@ -144,6 +145,6 @@ bc1q6lmkuju3kf7f8624fwt5qs7k5mf63mekgcnzf4
 
 ---
 
-## 📄 License
+## 📄 **License**
 
 This project is **licensed** under the [MIT License](LICENSE).
